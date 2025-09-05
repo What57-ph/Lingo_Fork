@@ -1,6 +1,6 @@
 package com.lingo.testservice.controller;
 
-import com.lingo.testservice.model.dto.request.ReqMediaResourceDTO;
+import com.lingo.testservice.model.dto.request.resource.ReqMediaResourceDTO;
 import com.lingo.testservice.model.dto.response.ResMediaResourceDTO;
 import com.lingo.testservice.service.MediaResourceService;
 import lombok.RequiredArgsConstructor;
@@ -19,9 +19,9 @@ public class MediaResourceController {
         return mediaResourceService.add(dto);
     }
 
-    @PutMapping("/update")
-    public ResMediaResourceDTO update(@RequestBody ReqMediaResourceDTO dto) {
-        return mediaResourceService.update(dto);
+    @PutMapping("/update/{id}")
+    public ResMediaResourceDTO update(@RequestBody ReqMediaResourceDTO dto, @PathVariable("id") long id) {
+        return mediaResourceService.update(dto, id);
     }
 
     @DeleteMapping("/delete/{id}")

@@ -1,6 +1,7 @@
 package com.lingo.testservice.controller;
 
-import com.lingo.testservice.model.dto.request.ReqTestDTO;
+import com.lingo.testservice.model.dto.request.test.ReqCreateTestDTO;
+import com.lingo.testservice.model.dto.request.test.ReqUpdateTestDTO;
 import com.lingo.testservice.model.dto.response.ResTestDTO;
 import com.lingo.testservice.service.TestService;
 import lombok.RequiredArgsConstructor;
@@ -13,15 +14,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TestController {
     private final TestService testService;
-
+    // notice that do not pass questions and resource to request body
     @PostMapping("/add")
-    public ResTestDTO add(@RequestBody ReqTestDTO dto) {
+    public ResTestDTO add(@RequestBody ReqCreateTestDTO dto) {
         return testService.add(dto);
     }
 
-    @PutMapping("/update")
-    public ResTestDTO update(@RequestBody ReqTestDTO dto) {
-        return testService.update(dto);
+    @PutMapping("/update/{id}")
+    public ResTestDTO update(@RequestBody ReqUpdateTestDTO dto, @PathVariable("id") long id) {
+        return testService.update(id, dto);
     }
 
     @DeleteMapping("/delete/{id}")

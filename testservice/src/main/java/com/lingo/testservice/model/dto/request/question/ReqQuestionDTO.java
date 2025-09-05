@@ -1,8 +1,7 @@
-package com.lingo.testservice.model.dto.request;
+package com.lingo.testservice.model.dto.request.question;
 
-import com.lingo.testservice.model.Answer;
-import com.lingo.testservice.model.MediaResource;
 import com.lingo.testservice.model.Test;
+import com.lingo.testservice.utils.enums.MediaResourceCategory;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -19,7 +18,7 @@ public class ReqQuestionDTO {
     long answerKey;
     String explanation;
     String part;
-    Test test;
+    MediaResourceCategory category;
 //    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
 //    List<Answer> answers;
 //    @OneToOne(mappedBy = "question", cascade = CascadeType.ALL)

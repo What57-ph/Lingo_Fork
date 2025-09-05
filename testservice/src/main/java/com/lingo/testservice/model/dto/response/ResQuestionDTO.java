@@ -20,7 +20,7 @@ public class ResQuestionDTO {
     long answerKey;
     String explanation;
     String part;
-    Test test;
-    List<Answer> answers;
-    MediaResource resource;
+    long testId;
+    List<ResAnswerDTO> answers;
+    String mediaUrl;
 }

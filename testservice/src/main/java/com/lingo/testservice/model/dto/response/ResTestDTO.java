@@ -20,6 +20,6 @@ public class ResTestDTO {
     int maxScore;
     int timeLimit;
     TestType type;
-    List<Question> questions;
-    MediaResource resource;
+//    List<Long> questions;
+    String mediaUrl;
 }

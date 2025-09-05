@@ -1,15 +1,14 @@
 package com.lingo.testservice.model;
 
+import com.lingo.testservice.utils.enums.MediaResourceCategory;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Entity
 @Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -22,6 +21,8 @@ public class MediaResource {
     String mediaUrl;
     @Nullable
     String description;
+    @Enumerated(value = EnumType.STRING)
+    MediaResourceCategory category;
     @OneToOne
     @JoinColumn(name = "test_id")
     Test test;

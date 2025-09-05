@@ -18,7 +18,10 @@ public class Answer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     long id;
     String content;
-    @ManyToOne
+    @Column(name = "is_correct", nullable = false)
+    String correct;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "question_id")
     Question question;
 }

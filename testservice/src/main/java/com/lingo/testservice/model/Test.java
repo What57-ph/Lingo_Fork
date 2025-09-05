@@ -24,10 +24,10 @@ public class Test {
     @Enumerated(EnumType.STRING)
     TestType type;
 
-    @OneToMany(mappedBy = "test", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "test", cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     List<Question> questions;
 //    @OneToMany(mappedBy = "test", cascade = CascadeType.ALL)
 //    List<MediaResource> resources;
-    @OneToOne(mappedBy = "test", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "test", cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     MediaResource resource;
 }

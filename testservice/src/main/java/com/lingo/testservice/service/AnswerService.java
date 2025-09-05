@@ -2,7 +2,7 @@ package com.lingo.testservice.service;
 
 import com.lingo.testservice.mapper.AnswerMapper;
 import com.lingo.testservice.model.Answer;
-import com.lingo.testservice.model.dto.request.ReqAnswerDTO;
+import com.lingo.testservice.model.dto.request.answer.ReqAnswerDTO;
 import com.lingo.testservice.model.dto.response.ResAnswerDTO;
 import com.lingo.testservice.repository.AnswerRepository;
 import lombok.AccessLevel;
@@ -12,11 +12,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 
 public interface AnswerService {
     ResAnswerDTO add(ReqAnswerDTO answerDTO);
-    ResAnswerDTO update(ReqAnswerDTO answerDTO);
+    ResAnswerDTO update(ReqAnswerDTO answerDTO, long id);
     void delete(long id);
     List<ResAnswerDTO> getAll();
     ResAnswerDTO getOne(long id) throws Exception;
@@ -37,9 +38,14 @@ class AnswerServiceImpl implements AnswerService{
     }
 
     @Override
-    public ResAnswerDTO update(ReqAnswerDTO answerDTO) {
-        Answer answer=answerMapper.toAnswer(answerDTO);
-        answer = answerRepository.save(answer);
+    public ResAnswerDTO update(ReqAnswerDTO answerDTO, long id) {
+        Optional<Answer> answerOptional=answerRepository.findById(id);
+        answerOptional.ifPresent(answer -> {
+            answer.setContent(answerDTO.getContent());
+            answer.setCorrect(answerDTO.getCorrect());
+        });
+
+        Answer answer = answerRepository.save(answerOptional.get());
         return answerMapper.toResAnswerDTO(answer);
     }
 

@@ -1,5 +1,6 @@
 package com.lingo.testservice.model;
 
+import com.lingo.testservice.utils.enums.MediaResourceCategory;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -24,6 +25,8 @@ public class Question {
     long answerKey;
     String explanation;
     String part;
+    @Enumerated(value = EnumType.STRING)
+    MediaResourceCategory category; // for reading or listening
     @ManyToOne
     @JoinColumn(name = "test_id")
     Test test;

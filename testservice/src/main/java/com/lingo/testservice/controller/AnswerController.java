@@ -1,6 +1,6 @@
 package com.lingo.testservice.controller;
 
-import com.lingo.testservice.model.dto.request.ReqAnswerDTO;
+import com.lingo.testservice.model.dto.request.answer.ReqAnswerDTO;
 import com.lingo.testservice.model.dto.response.ResAnswerDTO;
 import com.lingo.testservice.service.AnswerService;
 import lombok.RequiredArgsConstructor;
@@ -19,9 +19,9 @@ public class AnswerController {
         return answerService.add(dto);
     }
 
-    @PutMapping("/update")
-    public ResAnswerDTO update(@RequestBody ReqAnswerDTO dto) {
-        return answerService.update(dto);
+    @PutMapping("/update/{id}")
+    public ResAnswerDTO update(@RequestBody ReqAnswerDTO dto, @PathVariable("id") long id) {
+        return answerService.update(dto,id);
     }
 
     @DeleteMapping("/delete/{id}")

@@ -1,6 +1,7 @@
 package com.lingo.testservice.controller;
 
-import com.lingo.testservice.model.dto.request.ReqQuestionDTO;
+import com.lingo.testservice.model.dto.request.question.ReqCreateQuestionDTO;
+import com.lingo.testservice.model.dto.request.question.ReqQuestionDTO;
 import com.lingo.testservice.model.dto.response.ResQuestionDTO;
 import com.lingo.testservice.service.QuestionService;
 import lombok.RequiredArgsConstructor;
@@ -15,13 +16,13 @@ public class QuestionController {
     private final QuestionService questionService;
 
     @PostMapping("/add")
-    public ResQuestionDTO add(@RequestBody ReqQuestionDTO dto) {
+    public ResQuestionDTO add(@RequestBody ReqCreateQuestionDTO dto) {
         return questionService.add(dto);
     }
 
-    @PutMapping("/update")
-    public ResQuestionDTO update(@RequestBody ReqQuestionDTO dto) {
-        return questionService.update(dto);
+    @PutMapping("/update/{id}")
+    public ResQuestionDTO update(@RequestBody ReqQuestionDTO dto,@PathVariable("id") long id) {
+        return questionService.update(dto, id);
     }
 
     @DeleteMapping("/delete/{id}")

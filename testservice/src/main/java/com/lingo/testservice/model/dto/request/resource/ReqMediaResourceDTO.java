@@ -1,7 +1,8 @@
-package com.lingo.testservice.model.dto.request;
+package com.lingo.testservice.model.dto.request.resource;
 
 import com.lingo.testservice.model.Question;
 import com.lingo.testservice.model.Test;
+import com.lingo.testservice.utils.enums.MediaResourceCategory;
 import jakarta.annotation.Nullable;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -16,6 +17,5 @@ public class ReqMediaResourceDTO {
     String mediaUrl;
     @Nullable
     String description;
-    Test test;
-    Question question;
+    MediaResourceCategory category;
 }

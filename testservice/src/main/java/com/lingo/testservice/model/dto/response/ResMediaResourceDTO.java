@@ -2,6 +2,7 @@ package com.lingo.testservice.model.dto.response;
 
 import com.lingo.testservice.model.Question;
 import com.lingo.testservice.model.Test;
+import com.lingo.testservice.utils.enums.MediaResourceCategory;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -14,6 +15,7 @@ public class ResMediaResourceDTO {
     long id;
     String mediaUrl;
     String description;
-    Test test;
-    Question question;
+    MediaResourceCategory category;
+    long testId;
+    long questionId;
 }
