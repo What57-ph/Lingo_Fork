@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/questions")
+@RequestMapping("/api/v1/question")
 @RequiredArgsConstructor
 public class QuestionController {
     private final QuestionService questionService;
@@ -21,7 +21,7 @@ public class QuestionController {
     }
 
     @PutMapping("/update/{id}")
-    public ResQuestionDTO update(@RequestBody ReqQuestionDTO dto,@PathVariable("id") long id) {
+    public ResQuestionDTO update(@RequestBody ReqQuestionDTO dto, @PathVariable("id") long id) {
         return questionService.update(dto, id);
     }
 

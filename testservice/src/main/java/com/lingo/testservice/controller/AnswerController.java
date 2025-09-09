@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/answers")
+@RequestMapping("/api/v1/answer")
 @RequiredArgsConstructor
 public class AnswerController {
     private final AnswerService answerService;
@@ -21,7 +21,7 @@ public class AnswerController {
 
     @PutMapping("/update/{id}")
     public ResAnswerDTO update(@RequestBody ReqAnswerDTO dto, @PathVariable("id") long id) {
-        return answerService.update(dto,id);
+        return answerService.update(dto, id);
     }
 
     @DeleteMapping("/delete/{id}")

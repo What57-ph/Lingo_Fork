@@ -10,10 +10,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/tests")
+@RequestMapping("/api/v1/test")
 @RequiredArgsConstructor
 public class TestController {
     private final TestService testService;
+
     // notice that do not pass questions and resource to request body
     @PostMapping("/add")
     public ResTestDTO add(@RequestBody ReqCreateTestDTO dto) {
