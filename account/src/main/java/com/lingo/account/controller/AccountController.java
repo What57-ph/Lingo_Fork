@@ -1,6 +1,7 @@
 package com.lingo.account.controller;
 
 import com.lingo.account.dto.request.ReqAccountDTO;
+import com.lingo.account.dto.request.ReqAccountGGDTO;
 import com.lingo.account.dto.request.ReqUpdateAccountDTO;
 import com.lingo.account.dto.response.ResAccountDTO;
 import com.lingo.account.dto.response.ResPaginationDTO;
@@ -71,5 +72,12 @@ public class AccountController {
   })
   public ResponseEntity<ResAccountDTO> updateAccount(@RequestBody ReqUpdateAccountDTO req ) {
     return ResponseEntity.ok(this.accountService.updateAccount(req));
+  }
+
+  @PostMapping("/gg")
+  public ResponseEntity<String> createAccountGG(@RequestBody ReqAccountGGDTO req ) {
+    ResAccountDTO dto = this.accountService.createAccountGG(req);
+
+    return ResponseEntity.ok("Account has been created!");
   }
 }

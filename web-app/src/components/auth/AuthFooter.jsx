@@ -5,6 +5,9 @@ import { Link, useLocation } from "react-router-dom"
 const AuthFooter = () => {
 
   const location = useLocation();
+  const googleAuthUrl = import.meta.env.VITE_GOOGLE_AUTH_URL;
+  console.log();
+
 
   return (
     <div>
@@ -21,9 +24,9 @@ const AuthFooter = () => {
         <button class="lift-on-hover flex items-center justify-center py-3 px-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition-all duration-300 cursor-pointer">
           <i class="text-red-500 text-xl"><GoogleOutlined /></i>
         </button>
-        <button class="lift-on-hover flex items-center justify-center py-3 px-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition-all duration-300 cursor-pointer">
+        <Link to={googleAuthUrl} class="lift-on-hover flex items-center justify-center py-3 px-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition-all duration-300 cursor-pointer">
           <i class=" text-blue-600 text-xl"><FacebookFilled /></i>
-        </button>
+        </Link>
         <button class="lift-on-hover flex items-center justify-center py-3 px-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition-all duration-300 cursor-pointer">
           <i class="fab fa-apple text-gray-800 text-xl"><AppleFilled /></i>
         </button>

@@ -1,6 +1,7 @@
 import { createContext, useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { getUserInfoApi, handleApiError, loginApi, registerApi } from "../config/api";
 
 const AuthContext = createContext();
 
@@ -33,11 +34,7 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
 
-      const response = await axios.post(
-        `http://localhost:8080/api/v1/auth/login`, { username, password }, {
-        withCredentials: true
-      }
-      )
+      const response = await loginApi(username, password);
 
       const { access_token } = response.data;
 
@@ -46,23 +43,14 @@ export const AuthProvider = ({ children }) => {
       //set default for each time call api by axios
       axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`
       // logic get user info
-      const userInfo = await axios.get(
-        `http://localhost:8180/realms/Lingo/protocol/openid-connect/userinfo`,
-        {
-          headers: {
-            "Authorization": `Bearer ${access_token}`
-          }
-        }
-      )
+      const userInfo = await getUserInfoApi(access_token);
 
-      setUser(userInfo.data);
-      localStorage.setItem('user_name', userInfo.data.name);
+      storeUserInfo(userInfo);
       setIsAuthenticated(true);
       toast.info("Đăng nhập thành công")
       return true;
     } catch (err) {
-      console.log("Login failed with error: ", err?.message);
-      toast.error(err?.response?.data?.detail);
+      handleApiError(err, "Đăng nhập thất bại");
       return false;
     }
     finally {
@@ -75,16 +63,12 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
 
       console.log(userData);
-      const response = await axios.post(
-        `http://localhost:8080/api/v1/account`,
-        userData
-      )
+      const response = await registerApi(userData);
       toast.info("Đăng ký tài khoản thành công")
       return true;
 
     } catch (err) {
-      console.error("Error when creating new account:" + err);
-      toast.error(err?.response?.data?.detail);
+      handleApiError(err, "Đăng ký tài khoản thất bại");
       return false;
     } finally {
       setLoading(false);
@@ -100,9 +84,60 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   }
 
+  const loginGoogle = async (code) => {
+    try {
+      setLoading(true);
+      console.log("From auth : ", code);
+
+      const response = await axios.post(
+        `http://localhost:8080/api/v1/auth/google/${code}`,
+        {},
+        { withCredentials: true }
+      );
+
+      const { access_token } = response.data;
+
+      localStorage.setItem("access_token", access_token);
+
+      //set default for each time call api by axios
+      axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`
+      // logic get user info
+      const userInfo = await getUserInfoApi(access_token);
+      storeUserInfo(userInfo);
+
+
+      const gg = await axios.post(
+        `http://localhost:8080/api/v1/account/gg`,
+        userInfo,
+        {
+          headers: {
+            "Authorization": `Bearer ${access_token}`
+          }
+        }
+      );
+
+      setIsAuthenticated(true);
+      toast.info("Đăng nhập thành công")
+      return true;
+
+    } catch (err) {
+      console.log("Login failed with error: ", err?.message);
+      toast.error(err?.response?.data?.detail);
+      return false;
+    }
+    finally {
+      setLoading(false);
+    }
+  }
+
+  const storeUserInfo = (info) => {
+    localStorage.setItem('user_profile', JSON.stringify(info));
+    setUser(info);
+  }
+
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, isAuthenticated, register }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, isAuthenticated, register, loginGoogle }}>
       {children}
     </AuthContext.Provider>
   );

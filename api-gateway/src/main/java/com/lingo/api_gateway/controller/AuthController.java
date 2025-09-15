@@ -54,4 +54,23 @@ public class AuthController {
 
     return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body(res);
   }
+
+  // different client id with backend
+  @PostMapping("/google/{code}")
+  ResponseEntity<TokenExchangeResponse> getGoogleToken(@PathVariable String code){
+    log.info("google code: {}", code);
+    TokenExchangeResponse res = authService.getGoogleToken(code);
+
+    ResponseCookie cookie = ResponseCookie.from("refresh_token", res.getRefreshToken())
+            .httpOnly(true)
+            .secure(true)
+            .sameSite("None")
+            .path("/")
+            .maxAge(Long.parseLong(res.getRefreshExpiresIn()))
+            .build();
+
+    return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body(res);
+  }
+
+
 }

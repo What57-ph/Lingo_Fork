@@ -49,7 +49,25 @@ public class AuthService {
       log.error("loginAccount error: {}", e.getMessage());
       throw new RuntimeException(Constants.ErrorCode.LOGIN_NOT_SUCCESS);
     }
+
   }
+
+  public TokenExchangeResponse getGoogleToken(String code) {
+    log.info("loginAccount: {}", code);
+    try {
+      TokenExchangeResponse res = this.authenClient.exchangeGoogleToken(
+              new GoogleTokenRequest("authorization_code",
+                      clientId, clientSecret, code, "http://localhost:5173/"));
+
+      return res;
+    } catch (RuntimeException e) {
+      log.error("loginAccount error: {}", e.getMessage());
+      throw new RuntimeException(Constants.ErrorCode.LOGIN_NOT_SUCCESS);
+    }
+
+  }
+
+
 
 
 }

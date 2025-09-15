@@ -3,6 +3,7 @@ package com.lingo.account.service;
 import com.lingo.account.dto.identity.ReqAccount;
 import com.lingo.account.dto.identity.TokenExchangeRequest;
 import com.lingo.account.dto.request.ReqAccountDTO;
+import com.lingo.account.dto.request.ReqAccountGGDTO;
 import com.lingo.account.dto.request.ReqUpdateAccountDTO;
 import com.lingo.account.dto.response.ResAccountDTO;
 import com.lingo.account.dto.response.ResPaginationDTO;
@@ -134,6 +135,24 @@ public class AccountService {
     this.accountRepository.save(account);
 
     return accountMapper.toResDTO(account);
+  }
+
+  public ResAccountDTO createAccountGG(ReqAccountGGDTO req) {
+    return this.accountRepository.findByEmail(req.getEmail())
+            .map(existingAccount -> {
+              log.info("Account with email {} already exists, returning existing account", req.getEmail());
+              return accountMapper.toResDTO(existingAccount);
+            })
+            .orElseGet(() -> {
+              Account account = new Account();
+              account.setEmail(req.getEmail());
+              account.setKeycloakId(req.getSub());
+              account.setEnable(true);
+              account.setUsername(req.getEmail());
+              this.accountRepository.save(account);
+              log.info("Created new account for email {}", req.getEmail());
+              return accountMapper.toResDTO(account);
+            });
   }
 
 

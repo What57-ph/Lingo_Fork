@@ -1,10 +1,27 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useContext, useEffect, useState } from 'react';
+import AuthContext from '../contexts/AuthContext';
 
 const HomePage = () => {
+    const { loginGoogle } = useContext(AuthContext);
+    const [code, setCode] = useState(null);
+
+    useEffect(() => {
+        const url = window.location.href;
+        const params = new URL(url).searchParams;
+        const value = params.get('code');
+        setCode(value);
+        if (value) {
+            async function fetchLogin() {
+                const successLogin = await loginGoogle(value);
+            }
+            fetchLogin();
+        }
+
+        history.replaceState({}, null, "/");
+    }, []);
+
     return (
         <div>
-            <Link to={"http://localhost:8180/realms/Lingo/protocol/openid-connect/auth?client_id=lingo-ui&redirect_uri=http%3A%2F%2Flocalhost%3A5173%2F&response_type=code&scope=openid%20email%20profile&kc_idp_hint=google"} >Click me</Link>
         </div>
     );
 };
