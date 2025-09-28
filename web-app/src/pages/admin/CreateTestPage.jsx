@@ -55,6 +55,7 @@ const CreateTestPage = () => {
                 setSubmitted(true);
 
                 dispatch(saveMultipleQuestions(questionSample));
+                console.log("debug when upload:", questionSample)
             });
 
     };
@@ -77,13 +78,26 @@ const CreateTestPage = () => {
 
         }
         if (typeUpload === "Part" && grouped["QUESTION_AUDIO"]) {
+            const audioFiles = grouped["QUESTION_AUDIO"];
+
             setQuestionSample(prevQuestions =>
-                prevQuestions.map(q => ({
-                    ...q,
-                    explanationResourceContent: grouped["QUESTION_AUDIO"][0]?.mediaUrl || null,
-                }))
+                prevQuestions.map(q => {
+                    const matchedAudio = audioFiles.find(item => {
+                        const part = item.mediaUrl
+                            .split("/")
+                            .pop()
+                            .match(/PART[_ ]?(\d+)/i)?.[1];  // extract number like 1, 2, 3
+                        return parseInt(part, 10) === parseInt(q.part.replace(/\D/g, ""), 10);
+                    });
+
+                    return matchedAudio
+                        ? { ...q, explanationResourceContent: matchedAudio.mediaUrl }
+                        : q;
+                })
             );
         }
+
+
 
 
         if (grouped["QUESTION_AUDIO"] && typeUpload === "Question") {

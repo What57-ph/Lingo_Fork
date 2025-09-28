@@ -51,8 +51,8 @@ const TimeFrame = ({ editMode, setEditMode }) => {
     };
 
     return (
-        <div className="w-full h-30 px-14 py-4 bg-gradient-to-r from-[#6a11cb] to-[#2575fc]">
-            {/* Top bar */}
+        <div className="w-full h-48 px-14 py-4 bg-gradient-to-r from-[#6a11cb] to-[#2575fc]">
+
             <div className="flex justify-between items-center ">
                 <div className="flex gap-3 items-center">
                     <p className="bg-white rounded-lg w-8 h-8 flex justify-center items-center text-lg">📚</p>
@@ -74,7 +74,14 @@ const TimeFrame = ({ editMode, setEditMode }) => {
                     </Button>
                 </div>
             </div>
-
+            {test?.mediaUrl && (
+                <div className="mt-4">
+                    <audio controls className="w-full">
+                        <source src={test.mediaUrl} type="audio/mpeg" />
+                        Your browser does not support the audio element.
+                    </audio>
+                </div>
+            )}
             {/* Progress bar */}
             <div className="mt-3">
                 <div className="flex justify-between items-center">

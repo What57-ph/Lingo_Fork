@@ -23,9 +23,11 @@ import com.google.cloud.storage.StorageOptions;
 import com.google.cloud.storage.Storage.BlobListOption;
 import com.lingo.fileservice.domain.FileDeleteDTO;
 import com.lingo.fileservice.domain.FileResponse;
+import com.lingo.fileservice.domain.ReqUpdateQuestionDTO;
 import com.lingo.fileservice.domain.ReqUpdateResourceDTO;
 import com.lingo.fileservice.enums.FileCategory;
 import com.lingo.fileservice.httpclient.MediaResourceClient;
+import com.lingo.fileservice.httpclient.QuestionClient;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +47,11 @@ public interface FileService {
                         String testTitle, FileCategory fileCategory, long id)
                         throws IOException, Exception;
 
+        FileResponse updateMediaResource(String objectName, MultipartFile file,
+                        String testTitle, FileCategory fileCategory, ReqUpdateQuestionDTO questionDTO,
+                        long questionId)
+                        throws IOException, Exception;
+
 }
 
 @RequiredArgsConstructor
@@ -62,6 +69,7 @@ class FileServiceImpl implements FileService {
         String credentialFilePath;
 
         final MediaResourceClient mediaResourceClient;
+        final QuestionClient questionClient;
 
         Logger log = LoggerFactory.getLogger(FileServiceImpl.class);
 
@@ -229,6 +237,32 @@ class FileServiceImpl implements FileService {
 
                         // Call external service to update resource
                         mediaResourceClient.updateMediaResource(resourceDTO, resourceId);
+
+                        // Delete old file after successful upload and external service call
+                        deleteFile(new FileDeleteDTO(objectName));
+
+                        return response;
+                } catch (Exception e) {
+                        log.error("Failed to update media resource: {}", e.getMessage());
+                        throw e;
+                }
+        }
+
+        @Override
+        public FileResponse updateMediaResource(String objectName, MultipartFile file, String testTitle,
+                        FileCategory fileCategory, ReqUpdateQuestionDTO questionDTO, long questionId)
+                        throws IOException, Exception {
+                if (objectName == null || objectName.isEmpty()) {
+                        throw new IllegalArgumentException("Object name cannot be null or empty");
+                }
+                if (file == null || file.isEmpty()) {
+                        throw new IllegalArgumentException("File cannot be null or empty");
+                }
+                try {
+                        // Upload new file first to ensure it succeeds before deleting the old one
+                        FileResponse response = uploadSingleFile(file, testTitle, fileCategory);
+                        questionDTO.setExplanationResourceContent(response.getMediaUrl());
+                        questionClient.updateQuestion(questionDTO, questionId);
 
                         // Delete old file after successful upload and external service call
                         deleteFile(new FileDeleteDTO(objectName));

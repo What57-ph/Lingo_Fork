@@ -1,21 +1,20 @@
-package com.lingo.testservice.model.dto.response;
+package com.lingo.fileservice.domain;
 
-import com.lingo.testservice.model.Answer;
-import com.lingo.testservice.model.MediaResource;
-import com.lingo.testservice.model.Test;
-import com.lingo.testservice.utils.enums.MediaResourceCategory;
+import com.lingo.fileservice.enums.MediaResourceCategory;
 
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import java.util.List;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ResQuestionDTO {
-    long id;
+public class ReqUpdateQuestionDTO {
     String title;
     long point;
     // fe pass question id to save key
@@ -23,10 +22,8 @@ public class ResQuestionDTO {
     String explanation;
     String part;
     int questionNumber;
-    long testId;
-    List<ResAnswerDTO> answers;
     MediaResourceCategory category;
     String resourceContent;
     String explanationResourceContent;
-    long resourceContentId;
+    String testTitle;
 }

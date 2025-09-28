@@ -36,4 +36,5 @@ public class Question {
     @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "resource_id")
     MediaResource resource;
+    String explanationResourceContent;
 }

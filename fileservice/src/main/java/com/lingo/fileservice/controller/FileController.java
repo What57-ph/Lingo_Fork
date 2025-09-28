@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.lingo.fileservice.domain.FileDeleteDTO;
 import com.lingo.fileservice.domain.FileResponse;
 import com.lingo.fileservice.domain.FileUpdateDTO;
+import com.lingo.fileservice.domain.ReqUpdateQuestionDTO;
 import com.lingo.fileservice.domain.ReqUpdateResourceDTO;
 import com.lingo.fileservice.enums.FileCategory;
 import com.lingo.fileservice.service.FileService;
@@ -62,7 +63,7 @@ public class FileController {
         return ResponseEntity.ok().body(null);
     }
 
-    @PutMapping("/update/{resourceId}")
+    @PutMapping("/updateContent/{resourceId}")
     public ResponseEntity<FileResponse> updateFileAndMediaResource(
             @RequestParam("file") @NotNull MultipartFile file,
             @RequestParam("testTitle") @NotBlank String testTitle,
@@ -73,10 +74,29 @@ public class FileController {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("File is required");
         }
-        ReqUpdateResourceDTO resourceDTO = new ReqUpdateResourceDTO(); // Initialize with appropriate fields
-        // Populate resourceDTO fields if necessary (e.g., set ID or other properties)
+        ReqUpdateResourceDTO resourceDTO = new ReqUpdateResourceDTO();
         FileResponse response = fileService.updateMediaResource(resourceDTO, updatedFileName, file, testTitle,
                 fileCategory, resourceId);
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/updateExplanation/{questionId}")
+    public ResponseEntity<FileResponse> updateExplanationResourceContent(
+            @RequestParam("file") @NotNull MultipartFile file,
+            @RequestParam("testTitle") @NotBlank String testTitle,
+            @RequestParam("fileCategory") @NotNull FileCategory fileCategory,
+            @RequestParam("currentResourceContent") @NotBlank String currentResourceContent,
+            @RequestParam("updatedFileName") @NotBlank String updatedFileName,
+            @PathVariable("questionId") long questionId
+    // @RequestBody ReqUpdateQuestionDTO questionDTO
+    ) throws IOException, Exception {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("File is required");
+        }
+        ReqUpdateQuestionDTO questionDTO = new ReqUpdateQuestionDTO();
+
+        FileResponse response = fileService.updateMediaResource(updatedFileName, file, testTitle, fileCategory,
+                questionDTO, questionId);
         return ResponseEntity.ok(response);
     }
 

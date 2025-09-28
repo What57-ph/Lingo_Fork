@@ -69,8 +69,9 @@ class QuestionServiceImpl implements QuestionService {
         question.setAnswers(answerList);
         MediaResource resource = MediaResource.builder().resourceContent(dto.getResourceContent())
                 .questions(List.of(question))
-                .explanationResourceContent(dto.getExplanationResourceContent()).build();
+                .build();
         question.setResource(resource);
+        question.setExplanationResourceContent(dto.getExplanationResourceContent());
         repository.save(question);
         // ResQuestionDTO response=mapper.toQuestionResponse(question);
         // response.setMediaUrl(question.getResource().getMediaUrl());
@@ -82,15 +83,28 @@ class QuestionServiceImpl implements QuestionService {
         Optional<Question> questionOptional = repository.findById(id);
         Optional<MediaResource> resourceOptional = resourceRepository.findByResourceContent(dto.getResourceContent());
         questionOptional.ifPresent(question -> {
-            question.setPart(dto.getPart());
-            question.setCategory(dto.getCategory());
-            question.setExplanation(dto.getExplanation());
-            question.setTitle(dto.getTitle());
-            question.setAnswerKey(dto.getAnswerKey());
+            if (dto.getPart() != null) {
+                question.setPart(dto.getPart());
+            }
+            if (dto.getCategory() != null) {
+                question.setCategory(dto.getCategory());
+            }
+            if (dto.getExplanation() != null) {
+                question.setExplanation(dto.getExplanation());
+            }
+            if (dto.getTitle() != null) {
+                question.setTitle(dto.getTitle());
+            }
+            if (dto.getAnswerKey() != null) {
+                question.setAnswerKey(dto.getAnswerKey());
+            }
+            if (dto.getTitle() != null) {
+                question.setTitle(dto.getTitle());
+            }
+            question.setExplanationResourceContent(dto.getExplanationResourceContent());
             if (resourceOptional.isPresent()) {
                 MediaResource resource = resourceOptional.get();
                 resource.setResourceContent(dto.getResourceContent());
-                resource.setExplanationResourceContent(dto.getExplanationResourceContent());
                 question.setResource(resource);
             }
 
@@ -135,13 +149,14 @@ class QuestionServiceImpl implements QuestionService {
             MediaResource resource = existing.orElseGet(() -> {
                 MediaResource newRes = MediaResource.builder()
                         .resourceContent(dto.getResourceContent())
-                        .explanationResourceContent(dto.getExplanationResourceContent())
+
                         .category(dto.getCategory())
                         .build();
                 return resourceRepository.save(newRes);
             });
 
             question.setResource(resource);
+            question.setExplanationResourceContent(dto.getExplanationResourceContent());
 
             return question;
         })

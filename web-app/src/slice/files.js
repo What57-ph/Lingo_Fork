@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import * as XLSX from "xlsx";
-import { modifyQuestionResourceMedia, uploadMultipleFiles, uploadOneFile } from "../service/FileService";
+import { modifyExplanationResourceMedia, modifyQuestionResourceMedia, uploadMultipleFiles, uploadOneFile } from "../service/FileService";
 import { FaFileUpload } from "react-icons/fa";
 
 export const readExcelFile = createAsyncThunk(
@@ -25,7 +25,7 @@ export const saveMultipleFiles = createAsyncThunk(
     "files/uploadMultipleFiles",
     async ({ files, testTitle, fileCategory }, { dispatch }) => {
         return await uploadMultipleFiles(files, testTitle, fileCategory, (percent) => {
-            dispatch(updateProgress(percent));  // <-- update slice
+            dispatch(updateProgress(percent));
         });
     }
 );
@@ -44,6 +44,12 @@ export const saveUpdatingResourceMedia = createAsyncThunk(
     }
 )
 
+export const saveUpdatingExplanationResourceContent = createAsyncThunk(
+    "files/updateMediaResource",
+    async ({ questionId, file, testTitle, fileCategory, currentResourceContent, updatedFileName, }) => {
+        return await modifyExplanationResourceMedia(questionId, file, testTitle, fileCategory, currentResourceContent, updatedFileName);
+    }
+)
 const fileSlice = createSlice({
     name: "file",
     initialState: {
@@ -108,21 +114,23 @@ const fileSlice = createSlice({
                 state.loading = false;
                 state.excelData = action.payload;
             })
+
             .addCase(saveMultipleFiles.fulfilled, (state, action) => {
                 state.loading = false;
                 state.uploadedFiles.push(action.payload);
             })
-            .addCase(saveSingleFile.fulfilled, (state, action) => {
-                state.loading = false;
-                state.fileUpdating = action.payload;
-            })
-            .addCase(saveUpdatingResourceMedia.fulfilled, (state, action) => {
-                state.loading = false;
-                state.fileUpdating = action.payload;
-            })
             .addMatcher(
                 (action) =>
-                    [readExcelFile.pending, saveMultipleFiles.pending, saveSingleFile.pending, saveUpdatingResourceMedia.pending].includes(action.type),
+                    [saveSingleFile.fulfilled, saveUpdatingResourceMedia.fulfilled, saveUpdatingExplanationResourceContent.fulfilled].includes(action.type),
+                (state, action) => {
+                    state.loading = false;
+                    state.fileUpdating = action.payload
+                }
+            )
+
+            .addMatcher(
+                (action) =>
+                    [readExcelFile.pending, saveMultipleFiles.pending, saveSingleFile.pending, saveUpdatingResourceMedia.pending, saveUpdatingExplanationResourceContent.pending].includes(action.type),
                 (state) => {
                     state.loading = true;
                     state.error = null;
@@ -130,7 +138,7 @@ const fileSlice = createSlice({
             )
             .addMatcher(
                 (action) =>
-                    [readExcelFile.rejected, saveMultipleFiles.rejected, saveSingleFile.rejected, saveUpdatingResourceMedia.rejected].includes(action.type),
+                    [readExcelFile.rejected, saveMultipleFiles.rejected, saveSingleFile.rejected, saveUpdatingResourceMedia.rejected, saveUpdatingExplanationResourceContent.rejected].includes(action.type),
                 (state, action) => {
                     state.loading = false;
                     state.error = action.payload;

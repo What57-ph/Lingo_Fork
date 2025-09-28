@@ -56,9 +56,6 @@ class MediaResourceServiceImpl implements MediaResourceService {
         Optional<MediaResource> resourceOptional = repository.findById(resourceId);
         resourceOptional.ifPresent(resource -> {
             resource.setResourceContent(dto.getResourceContent());
-            if (dto.getExplanationResourceContent() != null) {
-                resource.setExplanationResourceContent(dto.getExplanationResourceContent());
-            }
             if (dto.getDescription() != null) {
                 resource.setDescription(dto.getDescription());
             }

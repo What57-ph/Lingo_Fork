@@ -40,7 +40,23 @@ export const uploadMultipleFiles = async (files, testTitle, fileCategory, onProg
 };
 
 export const modifyQuestionResourceMedia = async (resourceId, file, testTitle, fileCategory, currentResourceContent, updatedFileName) => {
-    const URL = `/file/update/${resourceId}`;
+    const URL = `/file/updateContent/${resourceId}`;
+    const bodyForm = new FormData();
+    bodyForm.append("testTitle", testTitle);
+    bodyForm.append("file", file);
+    bodyForm.append("fileCategory", fileCategory);
+    bodyForm.append("currentResourceContent", currentResourceContent);
+    bodyForm.append("updatedFileName", updatedFileName);
+    const response = await instance.put(URL, bodyForm, {
+        headers: {
+            "Content-Type": "multipart/form-data"
+        }
+    })
+    return response.data;
+}
+
+export const modifyExplanationResourceMedia = async (questionId, file, testTitle, fileCategory, currentResourceContent, updatedFileName) => {
+    const URL = `/file/updateExplanation/${questionId}`;
     const bodyForm = new FormData();
     bodyForm.append("testTitle", testTitle);
     bodyForm.append("file", file);

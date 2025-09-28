@@ -21,8 +21,6 @@ public class MediaResource {
     long id;
     @Column(name = "resource_content", columnDefinition = "LONGTEXT")
     String resourceContent;
-    @Column(name = "explanation_resource_url")
-    String explanationResourceContent;
     @Nullable
     String description;
     @Enumerated(value = EnumType.STRING)
