@@ -27,7 +27,7 @@ export const retrieveSingleAnswer = createAsyncThunk(
 
 export const modifyAnswer = createAsyncThunk(
     "answers/update",
-    async (id, answer) => {
+    async ({ id, answer }) => {
         return await updateAnswer(id, answer);
     }
 )

@@ -1,5 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import * as XLSX from "xlsx";
+import { modifyExplanationResourceMedia, modifyQuestionResourceMedia, uploadMultipleFiles, uploadOneFile } from "../service/FileService";
+import { FaFileUpload } from "react-icons/fa";
 
 export const readExcelFile = createAsyncThunk(
     "files/readExcelFile",
@@ -19,6 +21,35 @@ export const readExcelFile = createAsyncThunk(
     }
 );
 
+export const saveMultipleFiles = createAsyncThunk(
+    "files/uploadMultipleFiles",
+    async ({ files, testTitle, fileCategory }, { dispatch }) => {
+        return await uploadMultipleFiles(files, testTitle, fileCategory, (percent) => {
+            dispatch(updateProgress(percent));
+        });
+    }
+);
+
+export const saveSingleFile = createAsyncThunk(
+    "files/uploadSingleFiles",
+    async ({ file, testTitle, fileCategory }) => {
+        return await uploadOneFile(file, testTitle, fileCategory);
+    }
+)
+
+export const saveUpdatingResourceMedia = createAsyncThunk(
+    "files/updateMediaResource",
+    async ({ resourceId, file, testTitle, fileCategory, currentResourceContent, updatedFileName, }) => {
+        return await modifyQuestionResourceMedia(resourceId, file, testTitle, fileCategory, currentResourceContent, updatedFileName);
+    }
+)
+
+export const saveUpdatingExplanationResourceContent = createAsyncThunk(
+    "files/updateMediaResource",
+    async ({ questionId, file, testTitle, fileCategory, currentResourceContent, updatedFileName, }) => {
+        return await modifyExplanationResourceMedia(questionId, file, testTitle, fileCategory, currentResourceContent, updatedFileName);
+    }
+)
 const fileSlice = createSlice({
     name: "file",
     initialState: {
@@ -27,6 +58,9 @@ const fileSlice = createSlice({
         answerList: [],
         loading: false,
         error: null,
+        uploadedFiles: [],
+        fileUpdating: null,
+        uploadPercent: 0
     },
     reducers: {
         extractData: (state, action) => {
@@ -47,14 +81,16 @@ const fileSlice = createSlice({
 
                 const question = {
                     title: item.content,
-                    point: 0,
-                    answerKey: null,
-                    explanation: null,
+                    point: 5,
+                    answerKey: item.correct_answer,
+                    explanation: item.explanation,
                     part: item.part,
                     category: item.category,
-                    mediaUrl: mediaUrl,
+                    resourceContent: item.resourceContent || mediaUrl,
                     testTitle: testTitle,
                     answers: reqAnswer,
+                    explanationResourceContent: item.explanationResourceContent,
+                    questionNumber: item.number
                 };
 
                 questions.push(question);
@@ -63,24 +99,55 @@ const fileSlice = createSlice({
             state.questionList = questions;
             state.answerList = answers;
         },
+        updateProgress: (state, action) => {
+            state.uploadPercent = action.payload
+        },
+        updateQuestions: (state, action) => {
+            state.questionList = action.payload;
+        },
+
     },
+
     extraReducers: (builder) => {
         builder
-            .addCase(readExcelFile.pending, (state) => {
-                state.loading = true;
-                state.error = null;
-            })
             .addCase(readExcelFile.fulfilled, (state, action) => {
                 state.loading = false;
                 state.excelData = action.payload;
             })
-            .addCase(readExcelFile.rejected, (state, action) => {
+
+            .addCase(saveMultipleFiles.fulfilled, (state, action) => {
                 state.loading = false;
-                state.error = action.payload;
-            });
-    },
+                state.uploadedFiles.push(action.payload);
+            })
+            .addMatcher(
+                (action) =>
+                    [saveSingleFile.fulfilled, saveUpdatingResourceMedia.fulfilled, saveUpdatingExplanationResourceContent.fulfilled].includes(action.type),
+                (state, action) => {
+                    state.loading = false;
+                    state.fileUpdating = action.payload
+                }
+            )
+
+            .addMatcher(
+                (action) =>
+                    [readExcelFile.pending, saveMultipleFiles.pending, saveSingleFile.pending, saveUpdatingResourceMedia.pending, saveUpdatingExplanationResourceContent.pending].includes(action.type),
+                (state) => {
+                    state.loading = true;
+                    state.error = null;
+                }
+            )
+            .addMatcher(
+                (action) =>
+                    [readExcelFile.rejected, saveMultipleFiles.rejected, saveSingleFile.rejected, saveUpdatingResourceMedia.rejected, saveUpdatingExplanationResourceContent.rejected].includes(action.type),
+                (state, action) => {
+                    state.loading = false;
+                    state.error = action.payload;
+                }
+            )
+    }
+
 });
 
 const { reducer } = fileSlice;
 export default reducer;
-export const { extractData } = fileSlice.actions;
+export const { extractData, updateProgress, updateQuestions } = fileSlice.actions;
