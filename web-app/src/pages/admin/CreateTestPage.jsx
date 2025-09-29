@@ -16,7 +16,6 @@ import { saveMultipleQuestions } from '../../slice/questions';
 import { useWatch } from 'antd/es/form/Form';
 import { FaRegImage } from 'react-icons/fa6';
 import _ from "lodash";
-import { questionOfTest } from '../../data/MockData';
 
 const CreateTestPage = () => {
     const initialTestState = {
