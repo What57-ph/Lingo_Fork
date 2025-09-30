@@ -3,9 +3,8 @@ import './App.css'
 import './styles/antStyle.css'
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import AdminLayout from './layouts/AdminLayout';
+
 import 'react-toastify/dist/ReactToastify.css';
-
-
 
 import AuthLayout from './layouts/AuthLayout';
 import ClientLayout from './layouts/ClientLayout';
@@ -14,17 +13,26 @@ import CreateTestPage from './pages/admin/CreateTestPage';
 import UserPage from './pages/admin/UserPage';
 import TestPage from './pages/admin/TestPage';
 import DashboardPage from './pages/admin/DashboardPage';
+
+
+import ListTestsPage from './pages/tests/ListTestsPage';
+import BeforeTestPage from './pages/tests/BeforeTestPage';
+import AfterTestPage from './pages/tests/AfterTestPage';
+import HavingTestPage from './pages/tests/HavingTestPage';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import ForgetPage from './pages/auth/ForgetPage';
 import ResetPage from './pages/auth/ResetPage';
 import { ToastContainer } from 'react-toastify';
-import BeforeTestPage from './pages/tests/BeforeTestPage';
-import AfterTestPage from './pages/tests/AfterTestPage';
 import TestListPage from './pages/tests/TestListPage';
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { initializeAuth } from "./slice/authentication";
+
+
+
+
+
 function App() {
 
   const dispatch = useDispatch();
@@ -32,6 +40,7 @@ function App() {
   useEffect(() => {
     dispatch(initializeAuth());
   }, [dispatch]);
+
 
   const router = createBrowserRouter([
     {
@@ -89,10 +98,14 @@ function App() {
           element: <HomePage />,
         },
         {
+<<<<<<< HEAD
           path: "tests",
           element: <TestListPage />,
         },
         {
+=======
+
+>>>>>>> DucNM/Authentication
           path: "tests/:id/:name",
           element: <BeforeTestPage />,
         },
@@ -101,6 +114,10 @@ function App() {
           element: <AfterTestPage />,
         },
 
+        {
+          path: "tests/:id/:name/doTests",
+          element: <HavingTestPage />,
+        },
       ],
     },
   ]);

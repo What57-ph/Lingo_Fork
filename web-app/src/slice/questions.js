@@ -1,7 +1,10 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { addMultipleQuestions, addQuestion, deleteQuestion, getAllQuestionForTest, getAllQuestions, getOneQuestion, updateQuestion } from "../service/TestService";
 
-const initialState = [];
+const initialState = {
+    questions: [],
+    userAnswers: []
+};
 
 export const createQuestion = createAsyncThunk(
     "questions/create",
@@ -26,7 +29,7 @@ export const retrieveSingleQuestion = createAsyncThunk(
 
 export const modifyQuestion = createAsyncThunk(
     "questions/update",
-    async (id, question) => {
+    async ({ id, question }) => {
         return await updateQuestion(id, question);
     }
 )
@@ -52,38 +55,75 @@ export const retrieveQuestionForTest = createAsyncThunk(
     }
 )
 
+
 const questionSlice = createSlice({
     name: "question",
     initialState,
     reducers: {
-        [createQuestion.fulfilled]: (state, action) => {
-            state.push(action.payload);
-        },
-        [retrieveAllQuestions.fulfilled]: (state, action) => {
-            return [...action.payload];
-        },
-        [retrieveSingleQuestion.fulfilled]: (state, action) => {
-            return [...action.payload];
-        },
-        [modifyQuestion.fulfilled]: (state, action) => {
-            const index = state.findIndex(question => question.id === action.payload.id);
-            state[index] = {
-                ...state[index],
-                ...action.payload
-            };
-        },
-        [removeQuestion.fulfilled]: (state, action) => {
-            let index = state.findIndex(({ id }) => id === action.payload.id);
-            state.splice(index, 1);
-        },
-        [saveMultipleQuestions.fulfilled]: (state, action) => {
-            state.push(action.payload);
-        },
-        [retrieveAllQuestions.fulfilled]: (state, action) => {
-            return [...action.payload];
+        getUserAnswers: (state, action) => {
+            const { questionId, questionTitle, userAnswerId, userAnswer, isCorrect, questionNumber } = action.payload;
+            const answerExisting = state.userAnswers.find(
+                (answer) => answer?.question?.questionId === questionId
+            );
+
+            if (answerExisting) {
+                console.log("Update user answer")
+                answerExisting.userAnswer = userAnswer;
+                answerExisting.selectedAnswerId = userAnswerId;
+                answerExisting.isCorrect = isCorrect
+            } else {
+                state.userAnswers.push({
+                    // question: {
+                    //     questionId: questionId,
+                    //     questionTitle: questionTitle,
+                    //     questionNumber: questionNumber
+                    // },
+                    // isCorrect: isCorrect,
+                    // userAnswer: userAnswer,
+                    // selectedAnswerId: userAnswerId,
+
+                    questionId: questionId,
+                    userAnswer: userAnswer.split(".")[0]
+                }
+
+                )
+            }
+
+            // console.log(action.payload);
+
         }
+    },
+    extraReducers: (builder) => {
+        builder
+            .addCase(createQuestion.fulfilled, (state, action) => {
+                state.questions.push(action.payload);
+            })
+            .addCase(retrieveAllQuestions.fulfilled, (state, action) => {
+                return [...action.payload];
+            })
+            .addCase(retrieveSingleQuestion.fulfilled, (state, action) => {
+                return [...action.payload];
+            })
+            .addCase(modifyQuestion.fulfilled, (state, action) => {
+                const index = state.questions.findIndex(q => q.id === action.payload.id);
+                if (index !== -1) {
+                    state.questions[index] = { ...state[index], ...action.payload };
+                }
+            })
+            .addCase(removeQuestion.fulfilled, (state, action) => {
+                let index = state.questions.findIndex(({ id }) => id === action.payload.id);
+                state.questions.splice(index, 1);
+            })
+            .addCase(saveMultipleQuestions.fulfilled, (state, action) => {
+                state.questions.push(action.payload);
+            })
+            .addCase(retrieveQuestionForTest.fulfilled, (state, action) => {
+                state.questions = action.payload
+            });
     }
-})
+});
+
 
 const { reducer } = questionSlice;
 export default reducer;
+export const { getUserAnswers } = questionSlice.actions;

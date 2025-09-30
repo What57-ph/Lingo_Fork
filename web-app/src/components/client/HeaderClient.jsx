@@ -123,7 +123,7 @@ const HeaderClient = () => {
             <div style={{ borderTop: "1px solid #f3f4f6", padding: "8px 16px" }}>
                 <Button type="link" block>
                     Xem tất cả thông báo
-                </Button>
+                </Button>cation
             </div>
         </Card>
     );
@@ -162,7 +162,6 @@ const HeaderClient = () => {
             ]}
         />
     );
-
 
 
     return (

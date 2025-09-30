@@ -24,6 +24,10 @@ spring:
           uri: lb://attempt-service
           predicates:
             - Path=/api/v1/attempt/**
+        - id: file-service
+          uri: http://localhost:9004
+          predicates:
+            - Path=/api/v1/file/**
   security:
     oauth2:
       resourceserver:
@@ -38,8 +42,10 @@ eureka:
       defaultZone: http://localhost:8761/eureka/
       register-with-eureka: true
       fetch-registry: true
+      
 idp:
   url: http://localhost:8180
   client-id: Lingo
   client-secret: JK7Mc23PlhXx3TSCVlC3wKhq7PmohD8I
   realm: Lingo
+
