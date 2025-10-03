@@ -4,7 +4,7 @@ import { CaretRightOutlined, ClockCircleFilled, ClockCircleOutlined, DownOutline
 import FilterTab from "../../components/tests/ListPage/FilterTab";
 import ExamCate from "../../components/tests/ListPage/ExamCate";
 import TestItem from "../../components/tests/ListPage/TestItem";
-import { createSearchParams, useLocation, useNavigate } from "react-router-dom";
+import { createSearchParams, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { retrieveTests, setPage, setPageSize, setSearch, setSort, setTests } from "../../slice/testListSlice";
 import { useEffect } from "react";
@@ -16,15 +16,58 @@ const TestListPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
-  const { sort, search, category, status, page, pageSize } = useSelector(state => state.tests);
-  const { loading } = useSelector(state => state.attempts)
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const userId = 1; // integrate with authentication
+  const category = searchParams.get("category") || "all";
+  const search = searchParams.get("search") || "";
+  const sort = searchParams.get("sort") || "";
+  const page = parseInt(searchParams.get("page") || "0", 10);
+  const pageSize = parseInt(searchParams.get("size") || "9", 10);
 
-  // get all test with filter
+  const status = searchParams.get("status") || "";
+  const { loading, attempts } = useSelector((state) => state.attempts);
+  const { meta } = useSelector((state) => state.tests);
+
+  // console.log(meta);
+
+
+  const userId = 1;
+
   useEffect(() => {
-    dispatch(retrieveTests({ sort, search, category, status }));
-  }, [sort, search, category, status]);
+    const Page = `page=${page}&size=${pageSize}&`;
+
+    let filterExpr = "";
+
+    if (status === "done" || status === "notdone") {
+      const quizIds = [...new Set(attempts.map(a => a.quizId))];
+      if (quizIds.length > 0) {
+        if (status === "done") {
+          filterExpr = `id in [${quizIds.join(",")}]`;
+        } else if (status === "notdone") {
+          filterExpr = `id not in [${quizIds.join(",")}]`;
+        }
+      }
+    }
+
+    if (category && category !== "all") {
+      filterExpr += filterExpr
+        ? ` and type~'${category}'`
+        : `type~'${category}'`;
+    }
+
+    if (search && search.trim() !== "") {
+      filterExpr += filterExpr
+        ? ` and title~'*${search}*'`
+        : `title~'*${search}*'`;
+    }
+
+    const filter = filterExpr ? `filter=${encodeURIComponent(filterExpr)}` : "";
+    const sortParam = sort ? `&sort=${sort},asc` : "";
+    const params = filter || sortParam ? `${filter}${sortParam}` : "";
+
+    dispatch(retrieveTests(Page + params));
+  }, [dispatch, attempts, category, search, sort, page, pageSize, status]);
+
 
   // get all attempt user did along with test 
   useEffect(() => {
@@ -87,9 +130,9 @@ const TestListPage = () => {
                 />
 
                 <Select size="large" placeholder="Sắp xếp" style={{ width: 150 }} onChange={handleChangeSelect}>
-                  <Option value="jack">Lượt làm bài</Option>
-                  <Option value="lucy">Lượt bình luận</Option>
-                  <Option value="Yiminghe">Điểm đánh giá</Option>
+                  <Option value="attempts">Lượt làm bài</Option>
+                  <Option value="comment">Lượt bình luận</Option>
+                  <Option value="">Điểm đánh giá</Option>
                 </Select>
               </div>
 
@@ -106,8 +149,8 @@ const TestListPage = () => {
               <Pagination align="center"
                 showSizeChanger
                 onShowSizeChange={onShowSizeChange}
-                defaultCurrent={page}
-                total={pageSize}
+                defaultCurrent={meta?.page + 1}
+                total={meta?.pages}
               />
             </div>
 

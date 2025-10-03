@@ -17,7 +17,7 @@ const TestItem = () => {
 
 
 
-  const Item = ({ attempts, category, duration, finish = false, id, questions, title, type }) => {
+  const Item = ({ attempts = "100", category = "Toeic", timeLimit, finish = false, id, questions = '200', title, type }) => {
 
     const slugify = (str) => {
       return str
@@ -27,6 +27,8 @@ const TestItem = () => {
         .replace(/[^\w\-]+/g, '')
         .replace(/\-\-+/g, '-');
     };
+
+    const fixTitle = (title) => title.split('_').join(' ');
 
     const handleButton = () => {
       const slug = slugify(title);
@@ -44,7 +46,7 @@ const TestItem = () => {
         >
           <div className="flex flex-wrap items-start justify-between">
             <div className="flex flex-wrap gap-2 mb-4">
-              <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">{category}</span>
+              <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">{category || 'TOEIC'}</span>
               <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">{type}</span>
             </div>
 
@@ -52,14 +54,14 @@ const TestItem = () => {
           </div>
 
           <h3 className="text-lg font-bold text-gray-900 mb-4 hover:text-blue-600 ">
-            {title}
+            {fixTitle(title)}
           </h3>
 
           <Row gutter={[16, 16]} className="mb-6 text-gray-600" style={{ flex: "0 0 auto" }}>
             <Col span={12}>
               <Space>
                 <ClockCircleFilled className="!text-blue-500" />
-                <Text>{duration} phút</Text>
+                <Text>{timeLimit} phút</Text>
               </Space>
             </Col>
             <Col span={12}>

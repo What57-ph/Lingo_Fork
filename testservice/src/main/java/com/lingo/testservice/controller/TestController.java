@@ -1,10 +1,16 @@
 package com.lingo.testservice.controller;
 
+import com.lingo.testservice.model.Test;
 import com.lingo.testservice.model.dto.request.test.ReqCreateTestDTO;
 import com.lingo.testservice.model.dto.request.test.ReqUpdateTestDTO;
+import com.lingo.testservice.model.dto.response.ResPaginationDTO;
 import com.lingo.testservice.model.dto.response.ResTestDTO;
 import com.lingo.testservice.service.TestService;
+import com.turkraft.springfilter.boot.Filter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,8 +38,8 @@ public class TestController {
     }
 
     @GetMapping("/all")
-    public List<ResTestDTO> getAll() {
-        return testService.getAll();
+    public ResponseEntity<ResPaginationDTO> getAll(@Filter Specification<Test> spec, Pageable pageable) {
+        return ResponseEntity.ok(testService.getAll(spec, pageable));
     }
 
     @GetMapping("/{id}")

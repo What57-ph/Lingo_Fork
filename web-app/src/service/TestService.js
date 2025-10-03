@@ -1,7 +1,7 @@
 // Test service
 import instance from "./axios-customize";
-export const getAllTests = async () => {
-    const URL = "/test/all";
+export const getAllTests = async (params) => {
+    const URL = `/test/all?${params}`;
     const response = await instance.get(URL);
     return (await response).data;
 }

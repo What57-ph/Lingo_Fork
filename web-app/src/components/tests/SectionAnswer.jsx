@@ -15,6 +15,7 @@ const SectionAnswer = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [Choice, setChoice] = useState("");
   const [Correct, setCorrect] = useState("");
+  const [questionId, setQuestionId] = useState(null);
   const { attempt } = useSelector(state => state.attempts);
 
 
@@ -31,7 +32,7 @@ const SectionAnswer = () => {
     setIsModalOpen(false);
   };
 
-  const Questions = ({ questionNumber, choice = "N", correct = "N" }) => {
+  const Questions = ({ questionNumber, questionId, choice = "N", correct = "N" }) => {
 
     let check = choice === correct;
 
@@ -50,6 +51,7 @@ const SectionAnswer = () => {
             showModal();
             setChoice(choice);
             setCorrect(correct);
+            setQuestionId(questionId);
           }}>
             [Chi tiết]
           </Button>
@@ -64,12 +66,27 @@ const SectionAnswer = () => {
       label: `Part ${part.part}`,
       children: (
         <Row gutter={[16, 16]}>
-          {Array.from({ length: part.length }).map((_, index) => (
-            <Questions key={index} questionNumber={index + part.start}
-              choice={attempt?.answers[index]?.userAnswer}
-              correct={attempt?.answers[index]?.correctAnswer}
-            />
-          ))}
+          {Array.from({ length: part.length }).map((_, index) => {
+            // SỬA LẠI: tính globalIndex dựa trên part.start
+            const globalIndex = part.start - 1 + index;
+
+            // Kiểm tra để tránh lỗi
+            if (!attempt?.answers || globalIndex >= attempt.answers.length) {
+              return null;
+            }
+
+            const answerData = attempt.answers[globalIndex];
+
+            return (
+              <Questions
+                key={globalIndex}
+                questionNumber={globalIndex + 1}
+                questionId={answerData?.questionId}
+                choice={answerData?.userAnswer}
+                correct={answerData?.correctAnswer}
+              />
+            );
+          })}
         </Row>
       )
     };
@@ -98,6 +115,7 @@ const SectionAnswer = () => {
         handleCancel={handleCancel}
         correctAnswer={Correct}
         userAnswer={Choice}
+        questionId={questionId}
       />
 
     </Card>

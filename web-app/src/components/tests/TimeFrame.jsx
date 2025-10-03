@@ -55,18 +55,18 @@ const TimeFrame = ({ editMode, setEditMode }) => {
 
             <div className="flex justify-between items-center ">
                 <div className="flex gap-3 items-center">
-                    <p className="bg-white rounded-lg w-8 h-8 flex justify-center items-center text-lg">📚</p>
-                    <p className="text-white font-semibold text-lg">English Proficiency Test</p>
+                    <p className="bg-[#ffffff] rounded-lg w-8 h-8 flex justify-center items-center text-lg">📚</p>
+                    <p className="text-[#ffffff] font-semibold text-lg">English Proficiency Test</p>
                 </div>
 
-                <Button className={`!text-xl ! !border-0 !text-white !p-5 ${editMode ? "!bg-red-500 hover:!bg-red-600" : "!bg-amber-500 hover:!bg-amber-600"}`}
+                <Button className={`!text-xl ! !border-0 !text-[#ffffff] !p-5 ${editMode ? "!bg-red-500 hover:!bg-red-600" : "!bg-amber-500 hover:!bg-amber-600"}`}
                     onClick={() => setEditMode(!editMode)}>
                     {editMode ? <p className="flex items-center gap-2"><IoIosExit className="text-2xl" /> Exit Edit</p> : <p className="flex items-center gap-2"><FaEdit /> Edit Mode</p>}
                 </Button>
 
                 <div className="flex gap-4 items-center">
-                    <p className="text-white text-base ">Time: <span className="font-bold">{timeLimitFormat}</span></p>
-                    <Button className="!bg-red-600 !h-8 !w-24 !text-white !border-none !px-4 !text-sm hover:!bg-red-700">
+                    <p className="text-[#ffffff] text-base ">Time: <span className="font-bold">{timeLimitFormat}</span></p>
+                    <Button className="!bg-red-600 !h-8 !w-24 !text-[#ffffff] !border-none !px-4 !text-sm hover:!bg-red-700">
                         Exit Test
                     </Button>
                     <Button htmlType="submit" onClick={handleSubmitUserAnswers} className="hover:!bg-black !border-0 w-28">
@@ -86,7 +86,7 @@ const TimeFrame = ({ editMode, setEditMode }) => {
             <div className="mt-3">
                 <div className="flex justify-between items-center">
                     <p className="text-gray-200 text-[14px] mb-1 font-semibold">Overall Progress</p>
-                    <p className="text-white text-[14px] font-semibold">{userAnswers?.length}% Complete</p>
+                    <p className="text-[#ffffff] text-[14px] font-semibold">{userAnswers?.length}% Complete</p>
                 </div>
 
                 <Progress

@@ -102,7 +102,7 @@ const questionSlice = createSlice({
                 return [...action.payload];
             })
             .addCase(retrieveSingleQuestion.fulfilled, (state, action) => {
-                return [...action.payload];
+                return action.payload;
             })
             .addCase(modifyQuestion.fulfilled, (state, action) => {
                 const index = state.questions.findIndex(q => q.id === action.payload.id);

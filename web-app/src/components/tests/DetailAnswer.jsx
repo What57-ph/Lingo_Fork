@@ -1,9 +1,34 @@
 import { Card, Image, Modal } from "antd"
-import { BulbFilled, BulbOutlined, FileImageFilled, FileImageOutlined, QuestionOutlined, UnorderedListOutlined } from '@ant-design/icons'
+import { BulbFilled, BulbOutlined, CheckCircleOutlined, CloseCircleOutlined, FileImageFilled, FileImageOutlined, QuestionOutlined, UnorderedListOutlined } from '@ant-design/icons'
+import { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import { getOneQuestion } from "../../service/TestService";
+import { retrieveSingleQuestion } from "../../slice/questions";
 
-const DetailAnswer = ({ isModalOpen, handleOk, handleCancel, correctAnswer = "", userAnswer = "" }) => {
+const DetailAnswer = ({ isModalOpen, handleOk, handleCancel, correctAnswer = "", userAnswer = "", questionId }) => {
 
-  const MediaRs = ({ source }) => {
+  const dispatch = useDispatch();
+  const [questionData, setQuestionData] = useState([]);
+  // let id = 2;
+
+  useEffect(() => {
+    const fetchQuestion = async () => {
+      try {
+        const data = await dispatch(retrieveSingleQuestion(questionId)).unwrap();
+        console.log(data);
+
+        setQuestionData(data);
+      } catch (err) {
+        console.error("Lỗi khi lấy dữ liệu:", err);
+      }
+    };
+
+    if (questionId) {
+      fetchQuestion();
+    }
+  }, [questionId, dispatch]);
+
+  const MediaRs = ({ source = "https://s4-media1.study4.com/media/e24/images_fixed2/image206.png" }) => {
 
     let type1 = ["jpeg", "jpg", "png"];
     // let type2 = ["mp4", "mp3"];
@@ -18,7 +43,7 @@ const DetailAnswer = ({ isModalOpen, handleOk, handleCancel, correctAnswer = "",
             checkTypeImg ? "Hình ảnh câu hỏi" : "File âm thanh"
           }
         </h4>
-        <div className={`w-full ${checkTypeImg ? "bg-gray-200 !h-[60vh]" : "bg-blue-200 !h-[15vh]"}  rounded-lg flex items-center justify-center  overflow-auto`}>
+        <div className={`w-full ${checkTypeImg ? "bg-gray-200 !h-[60vh]" : "bg-gray-200 !h-[15vh]"}  rounded-lg flex items-center justify-center  overflow-auto`}>
           {checkTypeImg === true ?
             <Image
               className="!w-full "
@@ -45,31 +70,43 @@ const DetailAnswer = ({ isModalOpen, handleOk, handleCancel, correctAnswer = "",
   const AnswerStyle = ({ num, text, correctAnswer, userAnswer }) => {
     let borderClass = "!border-2 !border-gray-300";
     let textClass = "";
+    const letterMap = ['A', 'B', 'C', 'D'];
+    const displayNum = letterMap[num] || '?';
+    const isSelected = displayNum === userAnswer;
+    const isCorrectSelection = isSelected && userAnswer === correctAnswer;
 
-    if (num === correctAnswer) {
+    if (displayNum === correctAnswer) {
       borderClass = "!border-2 !border-green-600 bg-green-50";
       textClass = "text-green-700 font-medium";
-    } else if (num === userAnswer && userAnswer !== correctAnswer) {
-      borderClass = "!border-2 !border-red-600 bg-red-50";
+    } else if (displayNum === userAnswer && userAnswer !== correctAnswer) {
+      borderClass = "!border-2 !border-red-600 bg-red-50 ";
       textClass = "text-red-600 font-medium";
     }
 
     return (
       <Card size="small" className={borderClass}>
-        <div className="flex items-center space-x-3">
-          <div
-            className={`w-8 h-8 rounded-full flex items-center justify-center font-bold
-               ${num === correctAnswer
-                ? "bg-green-500 text-[#ffffff]"
-                : num === userAnswer
-                  ? "bg-red-500 text-[#ffffff]"
-                  : "bg-gray-100"}`}
-          >
-            {num}
+        <div className="flex flex-row items-center justify-between space-x-3">
+          <div className="flex flex-row items-center space-x-3">
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center font-bold
+          ${displayNum === correctAnswer
+                  ? "bg-green-500 text-white"
+                  : displayNum === userAnswer
+                    ? "bg-red-500 text-white"
+                    : "bg-gray-100"}`}
+            >
+              {displayNum}
+            </div>
+            <span className={textClass}>{text}</span>
           </div>
-          <span className={textClass}>{text}</span>
+          {isSelected && (
+            <span className={`${isCorrectSelection ? "text-green-600" : "text-red-600"} font-bold`}>
+              {isCorrectSelection ? <CheckCircleOutlined className="!text-base" /> : <CloseCircleOutlined className="!text-base" />}
+            </span>
+          )}
         </div>
       </Card>
+
     );
   };
 
@@ -98,28 +135,28 @@ const DetailAnswer = ({ isModalOpen, handleOk, handleCancel, correctAnswer = "",
               <QuestionOutlined className="text-2xl !text-blue-600" />
             </div>
             <div>
-              <h3 className="text-2xl font-bold text-gray-800">Chi tiết câu hỏi #<span id="enhancedQuestionNumber">1</span></h3>
-              <p className="text-gray-600">Part 1 - Photographs</p>
+              <h3 className="text-2xl font-bold text-gray-800">Chi tiết câu hỏi #<span id="enhancedQuestionNumber">{questionData?.id}</span></h3>
+              <p className="text-gray-600">{questionData?.part + " - " + questionData?.category}</p>
             </div>
           </div>
         </div>
 
-        <MediaRs source={"https://s4-media1.study4.com/media/e24/images_fixed2/image206.png"} />
+        <MediaRs source={questionData?.resourceContent} />
 
         {/* answer */}
 
         <div className="mt-5">
-          <h4 class="font-bold text-gray-800 mb-4 flex items-center gap-1">
+          <h4 className="font-bold text-gray-800 mb-4 flex items-center gap-1">
             <UnorderedListOutlined />
             Các lựa chọn trả lời
           </h4>
           <div className="flex flex-col !space-y-3">
-            {data.map((ans, index) => {
+            {questionData?.answers?.map((ans, index) => {
               return (
                 <AnswerStyle
-                  key={ans.key}
-                  num={ans.key}
-                  text={ans.text}
+                  key={ans.id}
+                  num={index}   // sth wrong
+                  text={ans.content}
                   correctAnswer={correctAnswer}
                   userAnswer={userAnswer}
                 />
@@ -136,9 +173,7 @@ const DetailAnswer = ({ isModalOpen, handleOk, handleCancel, correctAnswer = "",
             Giải thích chi tiết
           </h4>
           <p className="text-gray-700 leading-relaxed mb-4">
-            Trong hình ảnh, chúng ta có thể thấy một người đàn ông đang ngồi trước bàn làm việc.
-            Anh ta đang đặt tay lên bàn phím và nhìn vào màn hình máy tính. Đây rõ ràng là hành động
-            "sử dụng máy tính" (using a computer), do đó đáp án C là chính xác nhất.
+            {questionData?.explanation || 'Trong hình ảnh, chúng ta có thể thấy một người đàn ông đang ngồi trước bàn làm việc. Anh ta đang đặt tay lên bàn phím và nhìn vào màn hình máy tính. Đây rõ ràng là hành động "sử dụng máy tính" (using a computer), do đó đáp án C là chính xác nhất.'}
           </p>
         </Card>
 

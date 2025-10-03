@@ -1,8 +1,10 @@
 export const selectMergedTests = (state) => {
-  const { tests } = state.tests;
+  const { tests = [] } = state.tests;
   const { attempts = [] } = state.attempts;
 
-  console.log(attempts);
+  console.log("this attempts", attempts);
+  console.log("this result", tests);
+
 
 
   return tests.map(test => {

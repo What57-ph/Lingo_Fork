@@ -73,7 +73,7 @@ const MainContent = React.memo(({ editMode, testTitle, testId }) => {
     return (
         <main className="flex min-h-screen flex-col lg:flex-row">
             <div className="flex-1 p-4 sm:p-6 overflow-y-auto">
-                <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg mb-8">
+                <div className="bg-[#ffffff] rounded-xl p-4 sm:p-6 shadow-lg mb-8">
                     <div className="flex justify-between items-center mb-4 lg:hidden">
                         <Button
                             type="primary"
@@ -87,7 +87,7 @@ const MainContent = React.memo(({ editMode, testTitle, testId }) => {
                     <div className={`flex ${editMode ? 'mt-16' : 'mt-6'} justify-between`}>
                         <Button
                             type="primary"
-                            className="rounded-lg bg-black w-32 h-12 hover:bg-gray-700 text-white mx-2 sm:mx-4"
+                            className="rounded-lg bg-black w-32 h-12 hover:bg-gray-700 text-[#ffffff] mx-2 sm:mx-4"
                             onClick={() => movePage('previous')}
                             disabled={listQuestionNumber === 0}
                         >
@@ -104,7 +104,7 @@ const MainContent = React.memo(({ editMode, testTitle, testId }) => {
                     </div>
                 </div>
             </div>
-            <div className={`lg:block ${isSideProgressOpen ? 'block' : 'hidden'} w-full lg:w-80 bg-white border-l border-gray-200 p-4 sm:p-6 mt-4 lg:mt-6 rounded-xl lg:mr-7`}>
+            <div className={`lg:block ${isSideProgressOpen ? 'block' : 'hidden'} w-full lg:w-80 bg-[#ffffff] border-l border-gray-200 p-4 sm:p-6 mt-4 lg:mt-6 rounded-xl lg:mr-7`}>
                 <SideProgress
                     parts={_.uniq(questions.map((item) => item.part))}
                     questionsPerPart={_.countBy(questions, 'part')}

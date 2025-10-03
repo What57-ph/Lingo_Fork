@@ -7,6 +7,7 @@ import com.lingo.testservice.model.Test;
 import com.lingo.testservice.model.dto.request.resource.ReqCreateResourceDTO;
 import com.lingo.testservice.model.dto.request.test.ReqCreateTestDTO;
 import com.lingo.testservice.model.dto.request.test.ReqUpdateTestDTO;
+import com.lingo.testservice.model.dto.response.ResPaginationDTO;
 import com.lingo.testservice.model.dto.response.ResTestDTO;
 import com.lingo.testservice.repository.MediaResourceRepository;
 import com.lingo.testservice.repository.TestRepository;
@@ -16,6 +17,9 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +34,7 @@ public interface TestService {
 
     void delete(long id);
 
-    List<ResTestDTO> getAll();
+    ResPaginationDTO getAll(Specification<Test> spec, Pageable pageable);
 
     ResTestDTO getOne(long id) throws Exception;
 }
@@ -98,10 +102,31 @@ class TestServiceImpl implements TestService {
         testRepository.deleteById(id);
     }
 
+//    @Override
+//    public List<ResTestDTO> getAll() {
+//        return testRepository.findAll().stream().map(mapper::toTestResponse).toList();
+//    }
+
     @Override
-    public List<ResTestDTO> getAll() {
-        return testRepository.findAll().stream().map(mapper::toTestResponse).toList();
+    public ResPaginationDTO getAll(Specification<Test> spec, Pageable pageable) {
+        Page<Test> pTests = this.testRepository.findAll(spec, pageable);
+
+        ResPaginationDTO res = new ResPaginationDTO();
+        ResPaginationDTO.Meta meta = new ResPaginationDTO.Meta();
+
+        meta.setPage(pageable.getPageNumber());
+        meta.setPageSize(pageable.getPageSize());
+
+        meta.setPages(pTests.getTotalPages());
+        meta.setTotal(pTests.getTotalElements());
+
+        res.setMeta(meta);
+
+        res.setResult(pTests.getContent().stream().map(mapper::toTestResponse).toList());
+        return res;
     }
+
+
 
     @Override
     public ResTestDTO getOne(long id) throws Exception {

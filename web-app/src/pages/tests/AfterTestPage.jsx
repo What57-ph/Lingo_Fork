@@ -17,7 +17,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { retrieveAttempt } from "../../slice/attempts";
-import { current } from "@reduxjs/toolkit";
 import { formatTime } from "../../service/GlobalFunction";
 import SectionPoint from "../../components/tests/AfterPage/SectionPoint";
 

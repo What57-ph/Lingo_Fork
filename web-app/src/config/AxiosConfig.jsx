@@ -69,7 +69,7 @@ instance.interceptors.response.use(
 
       // Xóa token và redirect về login
       localStorage.removeItem('access_token');
-      window.location.href = '/auth/login';
+      // window.location.href = '/auth/login';
       return Promise.reject(new Error('Session expired'));
     }
 

@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { allTests } from "../data/MockData";
 import { getListTests } from "../config/api";
+import { getAllTests } from "../service/TestService";
 
 
 const initialState = {
@@ -8,18 +9,12 @@ const initialState = {
   status: "all",
   search: "",
   sort: "",
-  page: 1,
-  pageSize: 10,
-  tests: allTests.tests  // mock data
+  tests: [],
+  meta: {},
+  loading: false
 };
 
-export const retrieveTests = createAsyncThunk(
-  "tests/retrieve",
-  async (filters) => {
-    const res = await getListTests(filters);
-    return res.data;
-  }
-);
+export const retrieveTests = createAsyncThunk("tests/retrieveAll", async (params) => await getAllTests(params));
 
 const testListSlice = createSlice({
   name: "tests",
@@ -49,11 +44,15 @@ const testListSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(retrieveTests.fulfilled, (state, action) => {
-        state.tests = action.payload.data;
-        state.page = action.payload.page;
-        state.pageSize = action.payload.pageSize;
+      .addCase(retrieveTests.pending, (state, action) => {
+        state.loading = true;
       })
+      .addCase(retrieveTests.fulfilled, (state, { payload: { meta, result } }) => {
+        state.tests = result;
+        state.meta = meta;
+        state.loading = false;
+      })
+
   }
 
 });

@@ -3,11 +3,13 @@ import { addTest, deleteTest, getAllTests, getOneTest, updateTest } from "../ser
 
 const initialState = {
     test: null,
-    other: []
+    other: [],
+    tests: null,
+    loading: false,
 };
 
 export const createTest = createAsyncThunk("tests/create", async (test) => await addTest(test));
-export const retrieveAllTests = createAsyncThunk("tests/retrieveAll", async () => await getAllTests());
+export const retrieveAllTests = createAsyncThunk("tests/retrieveAll", async (params) => await getAllTests(params));
 export const retrieveSingleTest = createAsyncThunk("tests/retrieveOne", async (id) => await getOneTest(id));
 export const modifyTest = createAsyncThunk("tests/update", async ({ id, test }) => await updateTest(id, test));
 export const removeTest = createAsyncThunk("tests/delete", async (id) => await deleteTest(id));
@@ -25,8 +27,12 @@ const testSlice = createSlice({
             .addCase(createTest.fulfilled, (state, action) => {
                 state.other.push(action.payload);
             })
+            .addCase(retrieveAllTests.pending, (state, action) => {
+                state.loading = true;
+            })
             .addCase(retrieveAllTests.fulfilled, (state, action) => {
-                state.other = action.payload;
+                state.tests = action.payload;
+                state.loading = false;
             })
             .addCase(retrieveSingleTest.fulfilled, (state, action) => {
                 // console.log("Fetched test:", action.payload);
