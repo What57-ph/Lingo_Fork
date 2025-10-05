@@ -5,6 +5,7 @@ import com.lingo.attempt.dto.ResAttemptDTO;
 import com.lingo.attempt.dto.ResAttemptShortDTO;
 import com.lingo.attempt.service.AttemptService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,9 +16,14 @@ import java.util.List;
 public class AttemptController {
   private final AttemptService attemptService;
 
+//  @PostMapping
+//  public ResAttemptDTO createAttempt(@RequestBody ReqAttemptDTO req){
+//    return this.attemptService.createAttempt(req);
+//  }
+
   @PostMapping
-  public ResAttemptDTO createAttempt(@RequestBody ReqAttemptDTO req){
-    return this.attemptService.createAttempt(req);
+  public ResponseEntity<Long> createAttempt(@RequestBody ReqAttemptDTO req){
+    return ResponseEntity.ok(this.attemptService.createAttempt(req));
   }
 
   @GetMapping("/full")
@@ -32,8 +38,7 @@ public class AttemptController {
 
 
   @GetMapping("/{attemptId}")
-  public ResAttemptDTO getSingleAttempt(@PathVariable Long attemptId){
-    return this.attemptService.getSingleAttempt(attemptId);
+  public ResponseEntity<ResAttemptDTO> getSingleAttempt(@PathVariable Long attemptId){
+    return ResponseEntity.ok(this.attemptService.getSingleAttempt(attemptId));
   }
-
 }

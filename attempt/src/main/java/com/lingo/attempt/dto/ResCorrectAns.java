@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ResCorrectAns {
-  private Long questionId;
+  private long questionId;
   private String correctAnswer;
 }

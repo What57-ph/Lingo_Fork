@@ -16,6 +16,7 @@ com\lingo\attempt\controller\AttemptController.class
 com\lingo\attempt\service\FeignTestService.class
 com\lingo\attempt\model\Attempt.class
 com\lingo\attempt\dto\ResAttemptShortDTO.class
+com\lingo\attempt\config\FeignConfig.class
 com\lingo\attempt\repository\UserAnswersRepository.class
 com\lingo\attempt\AttemptApplication.class
 com\lingo\attempt\dto\ResCorrectAns.class

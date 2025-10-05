@@ -35,9 +35,12 @@ export const registerGG = (userData, access_token) => {
 }
 
 
-
 export const getListTests = (params) => {
   return instance.get("/api/v1/tests", { params });
+}
+
+export const postAttempt = (testData) => {
+  return instance.post("/api/v1/attempt", testData);
 }
 
 export const getAttemptUserShort = (userId) => {

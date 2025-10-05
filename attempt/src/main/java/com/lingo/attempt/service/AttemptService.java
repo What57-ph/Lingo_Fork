@@ -33,19 +33,17 @@ public class AttemptService {
   private final AttemptRepository attemptRepository;
   private final UserAnswersRepository userAnswersRepository;
   private final AttemptSectionResultRepository attemptSectionResultRepository;
-//  private final FeignTestService feignTestService;
+  private final FeignTestService feignTestService;
   private final AttemptMapper attemptMapper;
-  private final TestServiceFallback feignTestService;
+//  private final TestServiceFallback feignTestService;
   private static final Logger logger = LoggerFactory.getLogger(AttemptService.class);
 
-  public ResAttemptDTO createAttempt(ReqAttemptDTO req) {
+public Long createAttempt(ReqAttemptDTO req) {
     long start = System.currentTimeMillis();
 
     validateRequest(req);
 
-    // get all question id
-    List<Long> questionList = extractQuestionIds(req);
-    Map<Long, String> answers = getCorrectAnswers(questionList);
+    Map<Long, String> answers = getCorrectAnswers(req.getQuizId());
 
     Attempt attempt = buildAttempt(req);
 
@@ -56,7 +54,7 @@ public class AttemptService {
     List<UserAnswers> list = new ArrayList<>(); //db
 
     for (ReqAttemptDTO.AnswerDTO ans : req.getAnswers()) {
-      if (ans.getUserAnswer() == null || ans.getUserAnswer().trim().isEmpty()) {
+      if (ans.getUserAnswer() == null ) {
         continue;
       }
 
@@ -99,12 +97,12 @@ public class AttemptService {
     List<UserAnswers> savedAnswers = this.userAnswersRepository.saveAll(list);
 
 
-    ResAttemptDTO resAttemptDTO = buildResponse(attempt, savedAnswers, saveSectionRes);
+//    ResAttemptDTO resAttemptDTO = buildResponse(attempt, savedAnswers, saveSectionRes);
 
     long end = System.currentTimeMillis();
     logger.info("Execution time of doSomething(): {} ms", (end - start));
 
-    return resAttemptDTO;
+    return attempt.getAttemptId();
   }
 
   public ResAttemptDTO getSingleAttempt(Long attemptId) {
@@ -168,9 +166,9 @@ public class AttemptService {
     return questionIds;
   }
 
-  private Map<Long, String> getCorrectAnswers(List<Long> questionIds) {
+  private Map<Long, String> getCorrectAnswers(long testId) {
     try {
-      return feignTestService.getCorrectAnswer(questionIds).stream()
+      return feignTestService.getCorrectAnswer(testId).stream()
               .collect(Collectors.toMap(
                       ResCorrectAns::getQuestionId,
                       ResCorrectAns::getCorrectAnswer

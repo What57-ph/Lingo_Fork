@@ -9,6 +9,7 @@ import com.lingo.testservice.model.Test;
 import com.lingo.testservice.model.dto.request.question.ReqCreateQuestionDTO;
 import com.lingo.testservice.model.dto.request.question.ReqQuestionDTO;
 import com.lingo.testservice.model.dto.request.question.ReqUpdateQuestionDTO;
+import com.lingo.testservice.model.dto.response.ResCorrectAnswerDTO;
 import com.lingo.testservice.model.dto.response.ResQuestionDTO;
 import com.lingo.testservice.repository.MediaResourceRepository;
 import com.lingo.testservice.repository.QuestionRepository;
@@ -22,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -40,6 +42,9 @@ public interface QuestionService {
     void saveAll(List<ReqCreateQuestionDTO> reqListQuestion);
 
     List<ResQuestionDTO> findByTestId(long Id) throws Exception;
+
+    List<ResCorrectAnswerDTO> getCorrectAnswerOfQuestions(Long testId);
+
 }
 
 @RequiredArgsConstructor
@@ -176,5 +181,14 @@ class QuestionServiceImpl implements QuestionService {
         }).collect(Collectors.toList());
         return resQuestions;
 
+    }
+
+    @Override
+    public List<ResCorrectAnswerDTO> getCorrectAnswerOfQuestions(Long id){
+      try {
+        return this.repository.findIdAndAnswerKeyByTestId(id);
+      } catch (Exception e) {
+        throw new RuntimeException("Error getting correct answer", e);
+      }
     }
 }

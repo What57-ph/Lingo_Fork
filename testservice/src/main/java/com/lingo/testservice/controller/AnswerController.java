@@ -46,9 +46,9 @@ public class AnswerController {
         return answerService.getOne(id);
     }
 
-    @GetMapping("/correct")
-    public ResponseEntity<List<ResCorrectAnswerDTO>> getMethodName(@RequestBody List<Long> questionIds) {
-        return ResponseEntity.ok().body(answerService.getCorrectAnswerOfQuestions(questionIds));
+    @PostMapping("/correct")
+    public List<ResCorrectAnswerDTO> getMethodName(@RequestBody List<Long> questionIds) {
+        return answerService.getCorrectAnswerOfQuestions(questionIds);
     }
 
     @PostMapping("/bulk")

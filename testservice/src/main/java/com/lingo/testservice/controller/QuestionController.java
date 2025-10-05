@@ -3,6 +3,7 @@ package com.lingo.testservice.controller;
 import com.lingo.testservice.model.dto.request.question.ReqCreateQuestionDTO;
 import com.lingo.testservice.model.dto.request.question.ReqQuestionDTO;
 import com.lingo.testservice.model.dto.request.question.ReqUpdateQuestionDTO;
+import com.lingo.testservice.model.dto.response.ResCorrectAnswerDTO;
 import com.lingo.testservice.model.dto.response.ResQuestionDTO;
 import com.lingo.testservice.service.QuestionService;
 import lombok.RequiredArgsConstructor;
@@ -58,4 +59,8 @@ public class QuestionController {
         return ResponseEntity.ok().body(questionService.findByTestId(testId));
     }
 
+    @GetMapping("/correct/{testId}")
+    public List<ResCorrectAnswerDTO> getCorrectAnswer(@PathVariable("testId") long testId){
+        return this.questionService.getCorrectAnswerOfQuestions(testId);
+    }
 }

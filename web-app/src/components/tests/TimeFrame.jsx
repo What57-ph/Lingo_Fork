@@ -1,17 +1,23 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Button, Progress } from "antd";
+import { Button, Modal, Progress, Spin } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import { IoIosExit } from "react-icons/io";
 import { FaEdit } from "react-icons/fa";
 import { submitUserAnswer } from "../../slice/tests";
 import _ from "lodash";
+import { createAttempts } from "../../slice/attempts";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const TimeFrame = ({ editMode, setEditMode }) => {
     const dispatch = useDispatch();
     const { userAnswers, questions } = useSelector((state) => state.questions);
+    const { loading } = useSelector((state) => state.attempts);
     const { test } = useSelector(state => state.test);
     const [timeRemaining, setTimeRemaining] = useState(0);
     const [timeLimitFormat, setTimeLimitFormat] = useState();
+    const [modalSubmit, setModalSubmit] = useState(false);
+    const navigate = useNavigate();
+    const location = useLocation();
     useEffect(() => {
         if (test?.timeLimit) {
             setTimeRemaining(test.timeLimit * 60);
@@ -39,17 +45,41 @@ const TimeFrame = ({ editMode, setEditMode }) => {
         setTimeLimitFormat(`${minutes}:${seconds < 10 ? "0" + seconds : seconds}`);
     }, [timeRemaining]);
 
-    const handleSubmitUserAnswers = () => {
+    const handleSubmitUserAnswers = async () => {
         const timeTaken = test.timeLimit * 60 - timeRemaining;
 
-        dispatch(submitUserAnswer({
-            quizId: test?.id || null,
-            timeTaken,
-            type: test?.type || null,
-            fieldId: ["Listening", "Reading"],
-            answers: _.map(userAnswers, (a) => _.omit(a, "questionNumber"))
-        }));
+        try {
+            const attemptId = await dispatch(
+                createAttempts({
+                    quizId: test?.id || null,
+                    timeTaken,
+                    type: test?.type || null,
+                    field: ["Listening", "Reading"],
+                    answers: _.map(userAnswers, (a) => _.omit(a, "questionNumber")),
+                })
+            ).unwrap();
+
+            const currentPath = location.pathname;
+            const basePath = currentPath.replace(/\/doTests$/, "");
+
+            navigate(`${basePath}/results/${attemptId}`);
+        } catch (err) {
+            console.error("Nộp bài thất bại:", err);
+        }
     };
+
+    const showModalSubmit = () => {
+        setModalSubmit(true);
+    };
+    const handleOk = () => {
+        handleSubmitUserAnswers();
+        setModalSubmit(false);
+    };
+    const handleCancel = () => {
+        setModalSubmit(false);
+    };
+
+    if (loading) return <Spin spinning={loading} fullscreen={true} />
 
     return (
         <div className="w-full h-48 px-14 py-4 bg-gradient-to-r from-[#6a11cb] to-[#2575fc]">
@@ -60,18 +90,30 @@ const TimeFrame = ({ editMode, setEditMode }) => {
                     <p className="text-[#ffffff] font-semibold text-lg">English Proficiency Test</p>
                 </div>
 
-                <Button className={`!text-xl ! !border-0 !text-[#ffffff] !p-5 ${editMode ? "!bg-red-500 hover:!bg-red-600" : "!bg-amber-500 hover:!bg-amber-600"}`}
-                    onClick={() => setEditMode(!editMode)}>
-                    {editMode ? <p className="flex items-center gap-2"><IoIosExit className="text-2xl" /> Exit Edit</p> : <p className="flex items-center gap-2"><FaEdit /> Edit Mode</p>}
+                <Button
+                    className={`!text-xl !border-0 !text-[#ffffff] !p-5 flex justify-center items-center
+    ${editMode ? "!bg-red-500 hover:!bg-red-600" : "!bg-amber-500 hover:!bg-amber-600"}`}
+                    onClick={() => setEditMode(!editMode)}
+                >
+                    {editMode ? (
+                        <span className="flex items-center gap-2">
+                            <IoIosExit className="text-2xl" /> Exit Edit
+                        </span>
+                    ) : (
+                        <span className="flex items-center gap-2">
+                            <FaEdit /> Edit Mode
+                        </span>
+                    )}
                 </Button>
+
 
                 <div className="flex gap-4 items-center">
                     <p className="text-[#ffffff] text-base ">Time: <span className="font-bold">{timeLimitFormat}</span></p>
                     <Button className="!bg-red-600 !h-8 !w-24 !text-[#ffffff] !border-none !px-4 !text-sm hover:!bg-red-700">
                         Exit Test
                     </Button>
-                    <Button htmlType="submit" onClick={handleSubmitUserAnswers} className="hover:!bg-black !border-0 w-28">
-                        Submit
+                    <Button htmlType="submit" onClick={showModalSubmit} className="hover:!bg-black !border-0 w-28">
+                        Nộp bài
                     </Button>
                 </div>
             </div>
@@ -97,6 +139,17 @@ const TimeFrame = ({ editMode, setEditMode }) => {
                     trailColor="#ffffff22"
                 />
             </div>
+            <Modal
+                title="Bạn có chắc chắn muốn nộp bài?"
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                open={modalSubmit}
+                onOk={handleOk}
+                onCancel={handleCancel}
+                okText="Nộp bài"
+                cancelText="Hủy"
+            >
+                <p>Sau khi nộp, bạn sẽ không thể thay đổi câu trả lời.</p>
+            </Modal>
         </div>
     );
 };
