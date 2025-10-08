@@ -26,12 +26,13 @@ const TestListPage = () => {
 
   const status = searchParams.get("status") || "";
   const { loading, attempts } = useSelector((state) => state.attempts);
+  const { user } = useSelector((state) => state.authentication);
   const { meta } = useSelector((state) => state.tests);
 
   // console.log(meta);
 
 
-  const userId = 1;
+  const userId = user?.sub;
 
   useEffect(() => {
     const Page = `page=${page}&size=${pageSize}&`;

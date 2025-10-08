@@ -1,5 +1,7 @@
 import { Mutex } from "async-mutex";
 import axios from "axios";
+import publicInstance from "./AxiosPublicReq";
+import { useNavigate } from "react-router-dom";
 
 const mutex = new Mutex();
 const NO_RETRY_HEADER = 'x-no-retry';
@@ -12,27 +14,22 @@ const instance = axios.create({
 export const refreshToken = async () => {
   return await mutex.runExclusive(async () => {
     try {
+      const response = await publicInstance.post('/api/v1/auth/refresh');
+      // SỬA LỖI #2: Lấy token từ response.data
+      const { access_token } = response.data;
 
-      // testing phase
-      console.log("Access token before get new: " + localStorage.getItem('access_token'));
-
-      const response = await instance.post('/api/v1/auth/refresh');
-
-      const { access_token } = response;
-
-      console.log("Access token after get new: " + access_token);
-
-      localStorage.setItem("access_token", access_token);
-
-      instance.defaults.headers.common['Authorization'] = `Bearer ${access_token}`
-
-      return true;
+      if (access_token) {
+        localStorage.setItem("access_token", access_token);
+        instance.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
+        return true;
+      }
+      return false;
     } catch (err) {
-      console.log("Get refreshed token failed with error: " + err);
+      console.error("Refresh token failed:", err);
       return false;
     }
-  })
-}
+  });
+};
 
 instance.interceptors.request.use(
   function (config) {
@@ -55,37 +52,28 @@ instance.interceptors.response.use(
   (response) => response.data,
   async (error) => {
     const originalRequest = error.config;
-
-    if (error.response?.status === 401 &&
-      !originalRequest.url.includes('/auth/login') &&
-      !originalRequest.headers[NO_RETRY_HEADER]
-    ) {
+    if (error.response?.status === 401 && !originalRequest.headers[NO_RETRY_HEADER]) {
       originalRequest.headers[NO_RETRY_HEADER] = 'true';
-      const newToken = await refreshToken();
 
-      if (newToken) {
+      const refreshSuccess = await refreshToken();
+
+      if (refreshSuccess) {
         return instance(originalRequest);
       }
-
-      // Xóa token và redirect về login
       localStorage.removeItem('access_token');
-      // window.location.href = '/auth/login';
-      return Promise.reject(new Error('Session expired'));
+      localStorage.removeItem('user_profile');
+      delete instance.defaults.headers.common['Authorization'];
+
+      window.dispatchEvent(new Event('logout'));
+
+      return Promise.reject(new Error('Session expired. Please log in again.'));
     }
 
     if (error.response) {
       return Promise.reject(error.response.data);
     }
-    return Promise.reject(new Error('Connection error'));
-  }
-);
 
-instance.interceptors.response.use(
-  function (response) {
-    return response && response.data ? response.data : response;
-  },
-  function (error) {
-    return Promise.reject(error?.response?.data);
+    return Promise.reject(new Error('A network error occurred.'));
   }
 );
 export default instance;

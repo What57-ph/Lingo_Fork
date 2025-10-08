@@ -112,7 +112,7 @@ const questionSlice = createSlice({
             })
             .addCase(retrieveQuestionForTest.fulfilled, (state, action) => {
                 state.questions = action.payload;
-                // console.log("debug redux:", action.payload);
+                console.log("debug redux:", action.payload);
                 state.userAnswers = action.payload.map(question => ({
                     questionId: question.id,
                     userAnswer: "",

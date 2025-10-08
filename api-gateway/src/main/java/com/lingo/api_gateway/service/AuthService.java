@@ -38,7 +38,7 @@ public class AuthService {
 
 //  public TokenExchangeResponse getRefreshAccessToken(ReqTokenRefreshDTO request) {
     public TokenExchangeResponse getRefreshAccessToken(String refreshToken) {
-    log.info("loginAccount: {}", refreshToken);
+    log.info("get refresh token in service: {}", refreshToken);
     try {
       TokenExchangeResponse res = this.authenClient.refreshAccessToken(
               new RefreshTokenExchangeRequest("refresh_token",
@@ -46,7 +46,7 @@ public class AuthService {
 
       return res;
     } catch (RuntimeException e) {
-      log.error("loginAccount error: {}", e.getMessage());
+      log.error("get refresh token error: {}", e.getMessage());
       throw new RuntimeException(Constants.ErrorCode.LOGIN_NOT_SUCCESS);
     }
 

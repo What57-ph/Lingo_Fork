@@ -1,7 +1,7 @@
 import { AppleFilled, FacebookFilled, FacebookOutlined, GoogleOutlined, LockFilled, LockOutlined, LockTwoTone, MailFilled, MailOutlined, MailTwoTone } from "@ant-design/icons";
 import { Button, Checkbox, Form, Input, Spin } from "antd"
 import '../../styles/animation.css'
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { login } from "../../slice/authentication";
 import { toast } from "react-toastify";
@@ -9,6 +9,7 @@ import { toast } from "react-toastify";
 const LoginPage = () => {
 
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
   const { loading } = useSelector((state) => state.authentication);
 
@@ -19,7 +20,8 @@ const LoginPage = () => {
     const { username, password } = values;
     try {
       await dispatch(login({ username, password })).unwrap();
-      navigate("/");
+      const from = location.state?.from?.pathname || "/";
+      navigate(from, { replace: true });
       toast.info("Đăng nhập thành công");
     } catch (err) {
       return false;

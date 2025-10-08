@@ -15,7 +15,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { FaChartArea, FaChartLine, FaClipboard, FaSun } from "react-icons/fa";
 import { BiSolidBell, BiSolidBellRing } from "react-icons/bi";
 import { FaEarlybirds } from "react-icons/fa6";
-import { Link, useLocation } from "react-router-dom"
+import { Link, useLocation, useNavigate } from "react-router-dom"
 import {
     TrophyOutlined,
     CheckCircleOutlined,
@@ -63,20 +63,24 @@ const notifications = [
     },
 ];
 
-
 const HeaderClient = () => {
 
     const { user } = useSelector((state) => state.authentication);
     const userName = user?.email;
     const clientId = user?.sub;
+    const navigate = useNavigate();
 
     const [openAnnounce, setOpenAnnouce] = useState(false);
     const location = useLocation();
     const dispatch = useDispatch();
 
     const handleLogout = async () => {
-        await dispatch(logout(clientId)).unwrap();
-        window.location.reload();
+        try {
+            await dispatch(logout(clientId)).unwrap();
+            navigate(location.pathname);
+        } catch (error) {
+            console.error('Logout failed:', error);
+        }
     }
 
 

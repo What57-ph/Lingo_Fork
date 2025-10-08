@@ -92,7 +92,7 @@ export const loginGoogle = createAsyncThunk(
       return { user: userInfo, token: access_token }
     } catch (error) {
       handleApiError(error, "Đăng nhập google thất bại");
-      return thunkAPI.rejectWithValue(error?.response?.data?.detail || "Đăng ký thất bại");
+      return thunkAPI.rejectWithValue(error?.response?.data?.detail || "Đăng xuất thất bại");
     }
   }
 );
