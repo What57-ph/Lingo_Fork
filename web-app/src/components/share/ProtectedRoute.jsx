@@ -1,4 +1,4 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Spin } from "antd";
 import NotPermitted from "./NotPermitted";
@@ -15,6 +15,7 @@ const RoleBaseRoute = ({ children }) => {
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, isLoading } = useSelector(state => state.authentication);
+  const location = useLocation();
 
   return (
     <>
@@ -29,7 +30,7 @@ const ProtectedRoute = ({ children }) => {
               </RoleBaseRoute>
             </>
             :
-            <Navigate to='/login' replace />
+            <Navigate to='/auth/login' replace state={{ from: location }} />
           }
         </>
       }

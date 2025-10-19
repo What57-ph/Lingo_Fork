@@ -1,5 +1,6 @@
 package com.lingo.account.service;
 
+import com.lingo.account.config.KeycloakPropsConfig;
 import com.lingo.account.dto.identity.ReqAccount;
 import com.lingo.account.dto.identity.TokenExchangeRequest;
 import com.lingo.account.dto.request.ReqAccountDTO;
@@ -9,14 +10,20 @@ import com.lingo.account.dto.response.ResAccountDTO;
 import com.lingo.account.dto.response.ResPaginationDTO;
 import com.lingo.account.mapper.AccountMapper;
 import com.lingo.account.model.Account;
+import com.lingo.account.model.Role;
 import com.lingo.account.repository.AccountRepository;
 import com.lingo.account.repository.IdentityClient;
+import com.lingo.account.repository.RoleRepository;
 import com.lingo.account.utils.Constants;
 import com.lingo.common_library.exception.CreateUserException;
 import com.lingo.common_library.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
+import org.keycloak.admin.client.Keycloak;
+import org.keycloak.admin.client.resource.RealmResource;
+import org.keycloak.admin.client.resource.UserResource;
+import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,7 +32,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -35,6 +44,11 @@ public class AccountService {
   private final AccountRepository accountRepository;
   private final IdentityClient identityClient;
   private final AccountMapper accountMapper;
+  private final RoleService roleService;
+  private final RoleRepository roleRepository;
+  private final Keycloak keycloak;
+  private final KeycloakPropsConfig keycloakPropsConfig;
+  private final String USER = "USER";
 
   @Value("${idp.client-id}")
   @NonFinal
@@ -44,18 +58,14 @@ public class AccountService {
   @NonFinal
   String clientSecret;
 
-  public Account getAccount(String email) {
-    return this.accountRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("Account not found for email", email));
-  }
-
   public ResAccountDTO createNewAccount(ReqAccountDTO request) throws CreateUserException{
-
-    if (this.accountRepository.findByEmail(request.getEmail()).isPresent()) {
-      throw new CreateUserException(Constants.ErrorCode.EMAIL_ALREADY_EXITED);
-    }
 
     if (this.accountRepository.findByUsername(request.getUsername()).isPresent()){
       throw new CreateUserException(Constants.ErrorCode.USER_NAME_ALREADY_EXITED);
+    }
+
+    if (this.accountRepository.findByEmail(request.getUsername()).isPresent()){
+      throw new CreateUserException(Constants.ErrorCode.EMAIL_ALREADY_EXITED);
     }
 
       var createAccountRes = identityClient.createAccount(
@@ -75,17 +85,19 @@ public class AccountService {
                       .build());
 
       String userId = extractUserId(createAccountRes);
+      this.roleService.assignRole(userId, USER); // assign in keycloak
       log.info("KEYCLOAK, User created with id: {}", userId);
 
       Account account = accountMapper.toModel(request, userId);
+      account.setRoles(Arrays.asList(roleRepository.findByName(USER)));
       this.accountRepository.save(account);
 
       return accountMapper.toResDTO(account);
 
   }
 
-  public ResAccountDTO getAccount(Long id) throws NotFoundException {
-    Account account = this.accountRepository.findById(id)
+  public ResAccountDTO getAccount(String id) throws NotFoundException {
+    Account account = (Account) this.accountRepository.findByKeycloakId(id)
             .orElseThrow(() -> new NotFoundException(Constants.ErrorCode.USER_NOT_FOUND));
     return accountMapper.toResDTO(account);
   }
@@ -109,20 +121,12 @@ public class AccountService {
     return res;
   }
 
-  public void deleteAccount(Long id) {
-    Account account = this.accountRepository.findById(id)
-            .orElseThrow(() -> new NotFoundException(Constants.ErrorCode.USER_NOT_FOUND));
+  public void deleteAccount(String id) {
+    updateEnableAccount(id, false);
+  }
 
-    try {
-      var deleteAccount = this.identityClient.deleteAccount(
-              "Bearer" + getClientToken(),
-              account.getKeycloakId()
-      );
-      account.setEnable(false);
-    } catch (Exception e) {
-      log.error("KEYCLOAK, Error deleting user with id: {}", id);
-      throw new NotFoundException(Constants.ErrorCode.USER_NOT_FOUND);
-    }
+  public void restoreAccount(String id) {
+    updateEnableAccount(id, true);
   }
 
   public ResAccountDTO updateAccount(ReqUpdateAccountDTO request) {
@@ -135,6 +139,25 @@ public class AccountService {
     this.accountRepository.save(account);
 
     return accountMapper.toResDTO(account);
+  }
+
+  public Account updateEnableAccount(String id, boolean enable) {
+    UserRepresentation userRepresentation =
+            keycloak.realm(keycloakPropsConfig.getRealm()).users().get(id).toRepresentation();
+    Account account = (Account) this.accountRepository.findByKeycloakId(id)
+            .orElseThrow(() -> new NotFoundException(Constants.ErrorCode.USER_NOT_FOUND));
+
+    if (userRepresentation != null) {
+      RealmResource realmResource = keycloak.realm(keycloakPropsConfig.getRealm());
+      UserResource userResource = realmResource.users().get(id);
+      userRepresentation.setEnabled(enable);
+      userResource.update(userRepresentation);
+
+      account.setEnable(enable);
+      return this.accountRepository.save(account);
+    } else {
+      throw new NotFoundException(Constants.ErrorCode.USER_NOT_FOUND);
+    }
   }
 
   public ResAccountDTO createAccountGG(ReqAccountGGDTO req) {
@@ -150,6 +173,7 @@ public class AccountService {
               account.setEnable(true);
               account.setUsername(req.getEmail());
               this.accountRepository.save(account);
+              this.roleService.assignRole(req.getSub(), USER); // assign in keycloak
               log.info("Created new account for email {}", req.getEmail());
               return accountMapper.toResDTO(account);
             });

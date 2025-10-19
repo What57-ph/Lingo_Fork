@@ -77,7 +77,8 @@ const HeaderClient = () => {
     const handleLogout = async () => {
         try {
             await dispatch(logout(clientId)).unwrap();
-            navigate(location.pathname);
+            // navigate(location.pathname);
+            window.location.reload();
         } catch (error) {
             console.error('Logout failed:', error);
         }

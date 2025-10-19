@@ -49,7 +49,7 @@ public class AccountController {
           @ApiResponse(responseCode = "200", description = "Account found", content = @Content(mediaType = "application/json")),
           @ApiResponse(responseCode = "400", description = "Wrong/not valid account", content = @Content(mediaType = "application/json")),
   })
-  public ResponseEntity<ResAccountDTO> getAccount(@PathVariable Long id){
+  public ResponseEntity<ResAccountDTO> getAccount(@PathVariable String id){
     return ResponseEntity.ok(this.accountService.getAccount(id));
   }
 
@@ -59,7 +59,7 @@ public class AccountController {
           @ApiResponse(responseCode = "200", description = "Account deleted", content = @Content(mediaType = "application/json")),
           @ApiResponse(responseCode = "400", description = "Wrong/not valid accounts", content = @Content(mediaType = "application/json")),
   })
-  public ResponseEntity<String> deleteAccount(@PathVariable Long id) {
+  public ResponseEntity<String> deleteAccount(@PathVariable String id) {
     this.accountService.deleteAccount(id);
     return ResponseEntity.ok("Account deleted successfully");
   }

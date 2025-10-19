@@ -31,7 +31,8 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .authorizeExchange(exchange -> exchange
-                    .pathMatchers("/api/v1/auth/**", "/api/v1/account", "api/v1/test/**", "api/v1/attempt/**").permitAll()
+                    .pathMatchers("/api/v1/auth/**", "/api/v1/account", "/api/v1/account/**",
+                            "api/v1/test/**", "api/v1/attempt/**").permitAll()
 //                    .pathMatchers("api/v1/account/**").hasAuthority("ADMIN")
                     .anyExchange().authenticated()
             )

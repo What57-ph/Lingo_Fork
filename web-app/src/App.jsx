@@ -55,7 +55,11 @@ function App() {
             },
             {
               path: "tests/:id/:name/doTests",
-              element: <HavingTestPage />,
+              element: (
+                <ProtectedRoute>
+                  <HavingTestPage />
+                </ProtectedRoute>
+              ),
             },
             {
               path: "analytics",
