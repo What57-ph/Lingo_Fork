@@ -10,7 +10,7 @@ export const decodeToken = (token) => {
     } = decodeInf;
 
     const roles =
-      decodeInf?.resource_access?.["realm-management"]?.roles || ["NORMAL_USER"];
+      decodeInf?.realm_access?.["roles"] || ["USER"];
 
     const userInf = { preferred_username, email, sub, roles };
 

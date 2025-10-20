@@ -13,6 +13,7 @@ import java.util.Collection;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString(exclude = "users")
+@Table(name = "roles")
 public class Role {
 
   @Id

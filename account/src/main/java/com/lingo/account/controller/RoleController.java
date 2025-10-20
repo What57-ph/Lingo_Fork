@@ -18,9 +18,9 @@ public class RoleController {
     return ResponseEntity.ok("Successfully assign a role");
   }
 
-  @DeleteMapping()
-  public ResponseEntity<String> unAssignRoles(@RequestParam String accountId, @RequestParam String role) {
-    this.roleService.unAssignRoleToAccount(accountId, role);
-    return ResponseEntity.ok("Successfully unassign a role");
-  }
+//  @DeleteMapping()
+//  public ResponseEntity<String> unAssignRoles(@RequestParam String accountId, @RequestParam String role) {
+//    this.roleService.unAssignRoleToAccount(accountId, role);
+//    return ResponseEntity.ok("Successfully unassign a role");
+//  }
 }

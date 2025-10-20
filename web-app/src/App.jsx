@@ -81,15 +81,15 @@ function App() {
               element: <DashboardPage />
             },
             {
-              path: "user",
+              path: "users",
               element: <UserPage />
             },
             {
-              path: "test",
+              path: "tests",
               element: <TestPage />
             },
             {
-              path: "createTest",
+              path: "create-test",
               element: <CreateTestPage />
             }
           ]

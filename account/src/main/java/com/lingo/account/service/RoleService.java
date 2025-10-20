@@ -25,106 +25,138 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class RoleService {
   private final Keycloak keycloak;
   private final KeycloakPropsConfig keycloakPropsConfig;
   private final RoleRepository roleRepository;
   private final AccountRepository accountRepository;
 
+  public void assignRoles(String userId, List<String> roleNames) {
+
+    try {
+      UserResource userResource = keycloak.realm(keycloakPropsConfig.getRealm())
+              .users().get(userId);
+
+      List<RoleRepresentation> rolesToAssign = roleNames.stream()
+              .map(roleName -> {
+                try {
+                  return keycloak.realm(keycloakPropsConfig.getRealm())
+                          .roles().get(roleName).toRepresentation();
+                } catch (Exception e) {
+                  log.error("Role '{}' not found in Keycloak", roleName);
+                  return null;
+                }
+              })
+              .filter(Objects::nonNull)
+              .collect(Collectors.toList());
+
+      if (!rolesToAssign.isEmpty()) {
+        userResource.roles().realmLevel().add(rolesToAssign);
+        log.info("Successfully assigned roles {} to user: {}", roleNames, userId);
+      } else {
+        log.warn("No valid roles found to assign to user: {}", userId);
+      }
+
+    } catch (Exception e) {
+      log.error("Failed to assign roles {} to user: {}", roleNames, userId, e);
+      throw new RuntimeException("Failed to assign roles in Keycloak", e);
+    }
+  }
+
+  public void unAssignRoles(String userId, List<String> roleNames) {
+    try {
+      UserResource userResource = keycloak.realm(keycloakPropsConfig.getRealm())
+              .users().get(userId);
+
+      List<RoleRepresentation> rolesToRemove = roleNames.stream()
+              .map(roleName -> {
+                try {
+                  return keycloak.realm(keycloakPropsConfig.getRealm())
+                          .roles().get(roleName).toRepresentation();
+                } catch (Exception e) {
+                  log.error("Role '{}' not found in Keycloak", roleName);
+                  return null;
+                }
+              })
+              .filter(Objects::nonNull)
+              .collect(Collectors.toList());
+
+      if (!rolesToRemove.isEmpty()) {
+        userResource.roles().realmLevel().remove(rolesToRemove);
+        log.info("Successfully removed roles {} from user: {}", roleNames, userId);
+      } else {
+        log.warn("No valid roles found to remove from user: {}", userId);
+      }
+
+    } catch (Exception e) {
+      log.error("Failed to remove roles {} from user: {}", roleNames, userId, e);
+      throw new RuntimeException("Failed to remove roles in Keycloak", e);
+    }
+  }
+
+  public void assignRolesToAccount(String keycloakId, List<String> newRoleNames) {
+    try {
+      Account account = (Account) accountRepository.findByKeycloakId(keycloakId)
+              .orElseThrow(() -> new NotFoundException("Account not found with keycloakId: " + keycloakId));
+
+      List<String> currentRoleNames = account.getRoles() != null ?
+              account.getRoles().stream().map(Role::getName).toList() :
+              new ArrayList<>();
+
+      // Tìm roles cần thêm (có trong newRoles nhưng không có trong currentRoles)
+      List<String> rolesToAdd = newRoleNames.stream()
+              .filter(roleName -> !currentRoleNames.contains(roleName))
+              .toList();
+
+      // Tìm roles cần xóa (có trong currentRoles nhưng không có trong newRoles)
+      List<String> rolesToRemove = currentRoleNames.stream()
+              .filter(roleName -> !newRoleNames.contains(roleName))
+              .toList();
+
+      // Thực hiện assign roles mới
+      if (!rolesToAdd.isEmpty()) {
+        assignRoles(keycloakId, rolesToAdd);
+        log.info("Adding roles {} to account: {}", rolesToAdd, keycloakId);
+      }
+
+      // Thực hiện unassign roles cũ
+      if (!rolesToRemove.isEmpty()) {
+        unAssignRoles(keycloakId, rolesToRemove);
+        log.info("Removing roles {} from account: {}", rolesToRemove, keycloakId);
+      }
+
+      // Cập nhật database với danh sách roles mới
+      List<Role> newRoles = newRoleNames.stream()
+              .map(roleRepository::findByName)
+              .filter(Objects::nonNull)
+              .toList();
+
+      account.setRoles(new ArrayList<>(newRoles));
+      accountRepository.save(account);
+
+      log.info("Successfully updated roles for account: {} with roles: {}", keycloakId, newRoleNames);
+
+    } catch (Exception e) {
+      log.error("Failed to update roles for account: {}", keycloakId, e);
+      throw new RuntimeException("Failed to update account roles", e);
+    }
+
+  }
+
   public void assignRole(String userId, String roleName) {
-    try {
-      if (keycloak.tokenManager().getAccessToken() == null) {
-        log.error("Keycloak token is null. Authentication failed.");
-        throw new RuntimeException("Keycloak authentication failed - no access token");
-      }
-
-      RealmResource realmResource = keycloak.realm(keycloakPropsConfig.getRealm());
-
-      UserResource userResource = realmResource.users().get(userId);
-
-      RoleRepresentation guestRealmRole = realmResource.roles().get(roleName).toRepresentation();
-      if (guestRealmRole == null) {
-        throw new RuntimeException("Role not found: " + roleName);
-      }
-
-      userResource.roles().realmLevel().add(Collections.singletonList(guestRealmRole));
-
-
-      log.info("KEYCLOAK, User {} assigned role {}", userId, guestRealmRole.getName());
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  public void unAssignRole(String userId, String roleName) {
-    try {
-      if (keycloak.tokenManager().getAccessToken() == null) {
-        log.error("Keycloak token is null. Authentication failed.");
-        throw new RuntimeException("Keycloak authentication failed - no access token");
-      }
-
-      RealmResource realmResource = keycloak.realm(keycloakPropsConfig.getRealm());
-
-      UserResource userResource = realmResource.users().get(userId);
-
-      RoleRepresentation guestRealmRole = realmResource.roles().get(roleName).toRepresentation();
-      if (guestRealmRole == null) {
-        throw new RuntimeException("Role not found: " + roleName);
-      }
-
-      userResource.roles().realmLevel().remove(Collections.singletonList(guestRealmRole));
-
-
-      log.info("KEYCLOAK, User {} assigned role {}", userId, guestRealmRole.getName());
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  @Transactional
-  public void assignRoleToAccount(String userId, String roleName) {
-    Account account = (Account) accountRepository.findByKeycloakId(userId)
-            .orElseThrow(() -> new NotFoundException("User not found"));
-
-    assignRole(userId, roleName);
-
-    Role roleToAdd = roleRepository.findByName(roleName);
-    if (roleToAdd == null) {
-      throw new RuntimeException("Role not found in database: " + roleName);
-    }
-
-    Collection<Role> currentRoles = account.getRoles();
-
-    if (currentRoles == null || currentRoles.isEmpty()) {
-      account.setRoles(new ArrayList<>(Arrays.asList(roleToAdd)));
-    } else {
-      if (!currentRoles.contains(roleToAdd)) {
-        List<Role> rolesList = new ArrayList<>(currentRoles);
-        rolesList.add(roleToAdd);
-        account.setRoles(rolesList);
-      }
-    }
-    accountRepository.save(account);
-  }
-
-  @Transactional
-  public void unAssignRoleToAccount(String userId, String roleName) {
-    Account account = (Account) this.accountRepository.findByKeycloakId(userId)
-            .orElseThrow(() -> new NotFoundException("User not found"));
-    unAssignRole(userId, roleName);
-
-    Role role = roleRepository.findByName(roleName);
-    if (role != null) {
-      account.getRoles().remove(role);
-      this.accountRepository.save(account);
-    }
-
+    assignRoles(userId, Collections.singletonList(roleName));
   }
 
 
+  public void assignRoleToAccount(String keycloakId, String roleName) {
+    assignRolesToAccount(keycloakId, Collections.singletonList(roleName));
+  }
+  
 
 }

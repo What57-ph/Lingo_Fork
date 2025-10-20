@@ -6,7 +6,7 @@ import NotPermitted from "./NotPermitted";
 const RoleBaseRoute = ({ children }) => {
   const userInfo = localStorage.getItem('user_profile');
   const userRole = JSON.parse(userInfo).roles;
-  if (!userRole.includes['NORMAL_USER']) {
+  if (!userRole.includes['ADMIN']) {
     return (<>{children}</>)
   } else {
     return (<NotPermitted />)

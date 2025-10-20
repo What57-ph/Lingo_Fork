@@ -12,6 +12,7 @@ import com.lingo.account.mapper.AccountMapper;
 import com.lingo.account.model.Account;
 import com.lingo.account.model.Role;
 import com.lingo.account.repository.AccountRepository;
+import com.lingo.account.repository.AccountSpecifications;
 import com.lingo.account.repository.IdentityClient;
 import com.lingo.account.repository.RoleRepository;
 import com.lingo.account.utils.Constants;
@@ -26,6 +27,7 @@ import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
@@ -102,8 +104,30 @@ public class AccountService {
     return accountMapper.toResDTO(account);
   }
 
-  public ResPaginationDTO getAllAccounts(Specification<Account> spec, Pageable pageable) {
-    Page<Account> pOrder = this.accountRepository.findAll(spec, pageable);
+  public ResPaginationDTO getAllAccounts(
+          int pageNo,
+          int pageSize,
+          String username,
+          String email,
+          List<String> roles,
+          boolean enable,
+          Long from , Long to
+  ) {
+
+    Pageable pageable = PageRequest.of(pageNo, pageSize);
+
+    username = (username != null && username.trim().isEmpty()) ? null : username;
+    email = (email != null && email.trim().isEmpty()) ? null : email;
+    roles = (roles != null && roles.isEmpty()) ? null : roles;
+
+
+    Specification<Account> spec = Specification.where(AccountSpecifications.hasUsername(username))
+            .or(AccountSpecifications.hasEmail(email))
+            .and(AccountSpecifications.hasRoles(roles))
+            .and(AccountSpecifications.isEnable(enable))
+            .and(AccountSpecifications.createdBetween(from, to));
+
+    Page<Account> accountPage = this.accountRepository.findAll(spec, pageable);
 
     ResPaginationDTO res = new ResPaginationDTO();
     ResPaginationDTO.Meta meta = new ResPaginationDTO.Meta();
@@ -111,12 +135,12 @@ public class AccountService {
     meta.setPage(pageable.getPageNumber());
     meta.setPageSize(pageable.getPageSize());
 
-    meta.setPages(pOrder.getTotalPages());
-    meta.setTotal(pOrder.getTotalElements());
+    meta.setPages(accountPage.getTotalPages());
+    meta.setTotal(accountPage.getTotalElements());
 
     res.setMeta(meta);
 
-    res.setResult(pOrder.getContent().stream().map(accountMapper::toResDTO).toList());
+    res.setResult(accountPage.getContent().stream().map(accountMapper::toResDTO).toList());
 
     return res;
   }
@@ -130,12 +154,14 @@ public class AccountService {
   }
 
   public ResAccountDTO updateAccount(ReqUpdateAccountDTO request) {
-    Account account = this.accountRepository.findById(request.getId())
+    Account account = (Account) this.accountRepository.findByKeycloakId(request.getId())
             .orElseThrow(() -> new NotFoundException(Constants.ErrorCode.USER_NOT_FOUND));
 
     account.setFirstName(request.getFirstName());
     account.setLastName(request.getLastName());
-    account.setUsername(request.getUsername());
+
+    this.roleService.assignRolesToAccount(request.getId(), List.of(request.getRoles()));
+
     this.accountRepository.save(account);
 
     return accountMapper.toResDTO(account);

@@ -18,6 +18,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 
 @RestController
 @RequestMapping("/api/v1/account")
@@ -34,13 +36,18 @@ public class AccountController {
   }
 
   @GetMapping
-  @Operation(summary = "Find all accounts", description = "Return 200 if getting all account successfully")
-  @ApiResponses({
-          @ApiResponse(responseCode = "200", description = "All accounts found", content = @Content(mediaType = "application/json")),
-          @ApiResponse(responseCode = "400", description = "Wrong/not valid accounts", content = @Content(mediaType = "application/json")),
-  })
-  public ResponseEntity<ResPaginationDTO> getAllAccounts(@Filter Specification<Account> spec, Pageable pageable) {
-    return ResponseEntity.ok(this.accountService.getAllAccounts(spec, pageable));
+  public ResponseEntity<ResPaginationDTO> getAllAccounts(
+          @RequestParam(value = "pageNo", defaultValue = "0", required = false) int pageNo,
+          @RequestParam(value = "pageSize", defaultValue = "5", required = false) int pageSize,
+          @RequestParam(value = "search", defaultValue = "", required = false) String search,
+//          @RequestParam(value = "email", defaultValue = "", required = false) String email,
+          @RequestParam(value = "roles", defaultValue = "", required = false) List<String> role,
+          @RequestParam(value = "from", defaultValue = "", required = false) Long from,
+          @RequestParam(value = "to", defaultValue = "", required = false) Long to
+  ) {
+    return ResponseEntity.ok(this.accountService.getAllAccounts(
+            pageNo, pageSize, search, search, role, true, from, to
+    ));
   }
 
   @GetMapping("/{id}")
