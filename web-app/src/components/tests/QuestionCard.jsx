@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, Card, Form, Image, Input, Radio, Upload } from "antd";
+import { Button, Card, Descriptions, Form, Image, Input, Radio, Upload } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import { useForm } from "antd/es/form/Form";
 import ReactQuill from "react-quill-new";
@@ -27,13 +27,14 @@ const QuestionCard = ({ groupKey, questionRefs, resourceContent, editMode, quest
             [{ header: [1, 2, 3, false] }],
             [{ font: [] }, { size: [] }],
             ["bold", "italic", "underline", "strike", "blockquote"],
-            [{ color: [] }, { background: [] }],
+            [{ color: [] }, { background: [""] }],
             [{ list: "ordered" }, { list: "bullet" }, { indent: "-1" }, { indent: "+1" }],
             [{ align: [] }],
             ["link", "image", "video"],
             ["clean"],
         ],
     };
+
 
     // handle selecting an answer
     const handleAnswerChange = (qId, userAnswerChoice, isCorrect, questionTitle, userAnswer, questionNumber) => {
@@ -69,7 +70,14 @@ const QuestionCard = ({ groupKey, questionRefs, resourceContent, editMode, quest
             };
 
             dispatch(modifyQuestion({ id: question.id, question: updatingQuestion }));
-
+            dispatch(modifyResourceContent({
+                id: question.resourceContentId,
+                resource: {
+                    resourceContent: values?.passage,
+                    explanationResourceContent: question.explanationResourceContent,
+                    description: "updated"
+                }
+            }))
             question.answers.forEach((answer, answerIndex) => {
                 const updatingAnswer = {
                     content: values.questions[questionIndex].answers[answerIndex].content,
@@ -99,6 +107,14 @@ const QuestionCard = ({ groupKey, questionRefs, resourceContent, editMode, quest
         dispatch(saveUpdatingExplanationResourceContent(updatingQuestion))
     }
     // console.log("question of page:", questions)
+
+
+    useEffect(() => {
+        if (checkType(resourceContent) === "url") {
+            const img = new window.Image();
+            img.src = resourceContent;
+        }
+    }, [questions]);
     return (
         <Form
             form={form}
@@ -113,7 +129,7 @@ const QuestionCard = ({ groupKey, questionRefs, resourceContent, editMode, quest
                 })),
             }}
         >
-            <div className="flex gap-8">
+            <div className="flex gap-8 xl:flex-row flex-col">
                 {/* Passage section */}
                 {editMode ? (
                     <div className="flex flex-col flex-1">
@@ -168,7 +184,7 @@ const QuestionCard = ({ groupKey, questionRefs, resourceContent, editMode, quest
                         </div>
 
                         {checkType(resourceContent) === "url" ? (
-                            <Image src={resourceContent} />
+                            <Image src={resourceContent} onLoad={() => console.log("Load image of question:")} />
                         ) : (
                             <div
                                 className="prose max-w-none text-lg"
@@ -182,7 +198,6 @@ const QuestionCard = ({ groupKey, questionRefs, resourceContent, editMode, quest
                 <div className="flex-1">
                     {questions.map((q, qId) => (
                         <>
-
                             <Card
                                 key={q.id}
                                 ref={(el) => (questionRefs.current[q.questionNumber] = el)}

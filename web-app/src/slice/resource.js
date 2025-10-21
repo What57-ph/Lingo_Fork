@@ -6,7 +6,7 @@ const initialState = [];
 
 export const modifyResourceContent = createAsyncThunk(
     "resource/update",
-    async ({ resourceContent, resource }) => {
+    async ({ id, resource }) => {
         return await updateResource(id, resource);
     }
 )
