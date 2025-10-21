@@ -44,7 +44,8 @@ export const postAttempt = (testData) => {
 }
 
 export const getAttemptUserShort = (userId) => {
-  return instance.get("api/v1/attempt", { params: { userId } })
+  // return instance.get("api/v1/attempt", { params: { userId } })
+  return publicInstance.get("api/v1/attempt", { params: { userId } })
 };
 
 export const getAttempt = (attemptId) => {
@@ -55,4 +56,33 @@ export function handleApiError(err, defaultMsg = "Có lỗi xảy ra") {
   const msg = err?.response?.data?.detail || defaultMsg;
   toast.error(msg);
   console.error(msg, err);
-}
+};
+
+
+// account
+
+export const getAllAccounts = (params) => {
+  return publicInstance.get("api/v1/account", { params });
+};
+export const enableAccount = ({ id, enable }) => {
+  return publicInstance.post(
+    "api/v1/account/enable",
+    null,
+    {
+      params: { id, enable }
+    }
+  );
+};
+
+export const createAccount = (userData) =>
+  publicInstance.post("/api/v1/account", userData
+  );
+
+export const updateAccount = (userData) =>
+  publicInstance.put("/api/v1/account", userData
+  );
+
+
+export const removeAccount = (accountId) => {
+  return publicInstance.delete(`api/v1/account/${accountId}`);
+};

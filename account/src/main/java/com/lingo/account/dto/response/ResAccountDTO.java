@@ -5,7 +5,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Collections;
 
 @Data
 @NoArgsConstructor
@@ -16,6 +18,9 @@ public class ResAccountDTO {
   private String keycloakId;
   private String email;
   private String username;
-  private String firstName;
-  private String lastName;
+//  private String firstName;
+//  private String lastName;
+  private boolean enable;
+  private Instant createdAt;
+  private String[] roles ;
 }

@@ -77,7 +77,8 @@ const HeaderClient = () => {
     const handleLogout = async () => {
         try {
             await dispatch(logout(clientId)).unwrap();
-            navigate(location.pathname);
+            // navigate(location.pathname);
+            window.location.reload();
         } catch (error) {
             console.error('Logout failed:', error);
         }
@@ -169,7 +170,7 @@ const HeaderClient = () => {
 
 
     return (
-        <Header style={{ backgroundColor: 'white' }} className="!shadow-md !px-0">
+        <Header style={{ backgroundColor: 'white' }} className="!shadow-xl !px-0">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-16">
                     <div className="flex items-center space-x-8 h-full">
@@ -189,7 +190,7 @@ const HeaderClient = () => {
                                 <FaClipboard className="mr-2 text-sm" />
                                 Đề thi online
                             </Link>
-                            <Link href="#" className={`${location.pathname === '/analytics' ? "!text-blue-600 !bg-blue-50 !rounded-lg" : "!text-gray-700 hover:!text-blue-600"} 
+                            <Link to={"/analytics"} className={`${location.pathname === '/analytics' ? "!text-blue-600 !bg-blue-50 !rounded-lg" : "!text-gray-700 hover:!text-blue-600"} 
                                 flex items-center justify-center h-full p-2` }>
                                 <FaChartLine className="mr-2 text-sm" />
                                 Thống kê điểm

@@ -16,7 +16,7 @@ export const refreshToken = async () => {
     try {
       const response = await publicInstance.post('/api/v1/auth/refresh');
       // SỬA LỖI #2: Lấy token từ response.data
-      const { access_token } = response.data;
+      const { access_token } = response;
 
       if (access_token) {
         localStorage.setItem("access_token", access_token);

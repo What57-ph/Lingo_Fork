@@ -4,8 +4,9 @@ import lombok.Data;
 
 @Data
 public class ReqUpdateAccountDTO {
-  private Long id;
-  private String username;
+  private String id;
+//  private String username;
   private String firstName;
   private String lastName;
+  private String[] roles;
 }

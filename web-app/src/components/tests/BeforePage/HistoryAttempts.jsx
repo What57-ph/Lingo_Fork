@@ -9,7 +9,7 @@ const HistoryAttempts = () => {
   const dispatch = useDispatch();
   const { attempts } = useSelector((state) => state.attempts);
   const { user } = useSelector((state) => state.authentication);
-  const histories = attempts.filter(a => String(a.quizId) === id);
+  const histories = attempts.filter(a => String(a.quizId) === id) || 0;
   console.log(user);
 
 
