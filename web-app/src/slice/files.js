@@ -132,7 +132,7 @@ const fileSlice = createSlice({
             })
             .addMatcher(
                 (action) =>
-                    [saveUpdatingResourceMedia.fulfilled, saveUpdatingExplanationResourceContent.fulfilled].includes(action.type),
+                    [saveUpdatingResourceMedia.fulfilled.type, saveUpdatingExplanationResourceContent.fulfilled.type].includes(action.type),
                 (state, action) => {
                     state.loading = false;
                     state.fileUpdating = action.payload
@@ -141,7 +141,7 @@ const fileSlice = createSlice({
 
             .addMatcher(
                 (action) =>
-                    [readExcelFile.pending, saveMultipleFiles.pending, saveUpdatingResourceMedia.pending, saveUpdatingExplanationResourceContent.pending].includes(action.type),
+                    [readExcelFile.pending.type, saveMultipleFiles.pending.type, saveUpdatingResourceMedia.pending.type, saveUpdatingExplanationResourceContent.pending.type].includes(action.type),
                 (state) => {
                     state.loading = true;
                     state.error = null;

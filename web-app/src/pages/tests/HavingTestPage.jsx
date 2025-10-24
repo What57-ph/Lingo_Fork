@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { retrieveQuestionForTest } from '../../slice/questions';
 import { retrieveSingleTest } from '../../slice/tests';
+import { Spin } from 'antd';
 
 const HavingTestPage = () => {
     const [editMode, setEditMode] = useState(false);
@@ -12,6 +13,7 @@ const HavingTestPage = () => {
     const dispatch = useDispatch();
     const { questions, userAnswers } = useSelector((state) => state.questions);
     const { test } = useSelector((state) => state.tests);
+    const [isLoadingImages, setIsLoadingImages] = useState(true);
     useEffect(() => {
         const getQuestionsOfTest = async (id) => {
             await dispatch(retrieveQuestionForTest(id));
@@ -22,6 +24,41 @@ const HavingTestPage = () => {
         getQuestionsOfTest(id);
         getTestData(id);
     }, [id]);
+    // Preload all images and set loading state
+    useEffect(() => {
+        if (!questions?.length) return;
+
+        const imageUrls = questions
+            .map(q => q.resourceContent)
+            .filter(url => typeof url === "string" && url.match(/\.(jpg|jpeg|png|gif|webp)$/i));
+
+        if (!imageUrls.length) {
+            setIsLoadingImages(false);
+            return;
+        }
+        const cachedImages = new Set();
+        const loadImage = url =>
+            new Promise(resolve => {
+                if (cachedImages.has(url)) return resolve(url);
+                const img = new Image();
+                img.onload = () => { cachedImages.add(url); resolve(url); };
+                img.onerror = () => resolve(url);
+                img.src = url;
+            });
+
+        Promise.all(imageUrls.map(loadImage))
+            .then(() => setIsLoadingImages(false))
+            .catch(() => setIsLoadingImages(false));
+    }, [questions]);
+
+
+    if (isLoadingImages) {
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <Spin size="large" tip="Loading questions..." />
+            </div>
+        );
+    }
     // console.log(test)
     // console.log(userAnswers)
     return (
