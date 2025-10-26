@@ -133,10 +133,8 @@ const CurrentAttemptsTable = () => {
             submittedAt: attempt.submittedAt,
             type: test?.type || "N/A",
 
-            // ✅ Username found using userId === id
             userName: account?.username || "Unknown User",
 
-            // ✅ Auto initials if no avatar
             userAvatar: account?.username
                 ? account.username.substring(0, 2).toUpperCase()
                 : "??"
