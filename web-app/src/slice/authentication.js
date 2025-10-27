@@ -80,8 +80,9 @@ export const loginGoogle = createAsyncThunk(
   async (code, thunkAPI) => {
     try {
       const response = await loginGoogleApi(code);
+      console.log(response);
       const { access_token } = response;   // public axios so need .data
-      console.log("google: ", access_token);
+      // console.log("google: ", access_token);
       localStorage.setItem("access_token", access_token);
       const userInfo = decodeToken(access_token);
 
