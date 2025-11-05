@@ -17,6 +17,9 @@ public class ResAttemptDTO {
   private Long timeTaken;
   private Date submittedAt;
   private String type;
+
+  private String gradingIeltsId;   // delete after
+
   private List<SectionResult> sectionResults;
   private List<Answers> answers;
 
