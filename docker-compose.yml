@@ -141,9 +141,50 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - HOST_IP_ADDRESS=${HOST_IP_ADDRESS}
+  frontend:
+    build:
+      context: ./web-app
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./web-app:/app
+      - /app/node_modules
+    networks:
+      - backend
+    depends_on:
+      - apigateway
+  redis:
+    image: redis:7.4.1-alpine
+    restart: always
+    ports:
+      - '6379:6379'
+    environment:
+      - SPRING_DATA_REDIS_HOST
+      - SPRING_DATA_REDIS_PORT
+    volumes:
+      - redis:/data
+    networks:
+      - backend
+  rabbitmq:
+    image: rabbitmq:4-management
+    container_name: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: "admin"
+      RABBITMQ_DEFAULT_PASS: "123456"
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - backend
 
 networks:
   backend:
     driver: bridge
 volumes:
   mysql_data:
+  redis:
+    driver: local
+  rabbitmq_data:

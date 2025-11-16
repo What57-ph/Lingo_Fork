@@ -1,8 +1,0 @@
-# Ignore build output
-/attempt/target/
-*.jar
-*.jar.original
-
-backup.sql
-
-/fileservice/src/main/resources/keys/lingo-472101-5107c163d671.json

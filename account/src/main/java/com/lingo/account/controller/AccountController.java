@@ -1,17 +1,19 @@
 package com.lingo.account.controller;
 
-import com.lingo.account.dto.request.ReqAccountDTO;
-import com.lingo.account.dto.request.ReqAccountGGDTO;
-import com.lingo.account.dto.request.ReqAvatarDTO;
-import com.lingo.account.dto.request.ReqUpdateAccountDTO;
+import com.lingo.account.dto.request.*;
 import com.lingo.account.dto.response.ResAccountDTO;
 import com.lingo.account.dto.response.ResPaginationDTO;
+import com.lingo.account.repository.MessageService;
 import com.lingo.account.service.AccountService;
+import com.lingo.account.service.KeycloakService;
+import com.lingo.account.service.OtpService;
 import com.lingo.common_library.exception.CreateUserException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
@@ -22,12 +24,11 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/account")
+@RequiredArgsConstructor
 public class AccountController {
-  private AccountService accountService;
-
-  public AccountController(AccountService accountService) {
-    this.accountService = accountService;
-  }
+  private final AccountService accountService;
+  private final OtpService otpService;
+  private final KeycloakService keycloakService;
 
   @PostMapping
   public ResponseEntity<ResAccountDTO> createNewAccount(@RequestBody ReqAccountDTO request) throws CreateUserException {
@@ -78,7 +79,7 @@ public class AccountController {
   })
   public ResponseEntity<String> enableAccount(@RequestParam String id, @RequestParam boolean enable) {
     this.accountService.updateEnableAccount(id, enable);
-    return ResponseEntity.ok("Account deleted successfully");
+    return ResponseEntity.ok("Update account successfully");
   }
 
   @PutMapping()
@@ -105,4 +106,24 @@ public class AccountController {
 
     return ResponseEntity.ok("Avatar has been updated!");
   }
+
+  @PostMapping("/send-otp")
+  public ResponseEntity<String> sendOTP(@RequestParam String email, @RequestParam(defaultValue = "false") boolean resetPass){
+    String otp = this.otpService.generateOtp();
+    this.accountService.sendOTP(email, otp, resetPass);
+    return ResponseEntity.ok("OTP has been sent!");
+  }
+
+  @PostMapping("/verify-otp")
+  public ResponseEntity<String> verifyOTP(@RequestParam String email, @RequestParam String otp){
+    this.otpService.verifyOtp(email, otp);
+    return ResponseEntity.ok("OTP has been verified!");
+  }
+
+  @PutMapping("/reset-password")
+  public ResponseEntity<String> resetPass(@RequestBody ReqResetPassDTO req){
+    this.keycloakService.resetPassword(req.getEmail(), req.getPassword());
+    return ResponseEntity.ok("Password has been reset!");
+  }
+
 }

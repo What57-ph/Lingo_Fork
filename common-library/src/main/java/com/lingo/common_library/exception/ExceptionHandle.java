@@ -39,11 +39,27 @@ public class ExceptionHandle {
     HttpStatus status = HttpStatus.NOT_FOUND;
     String message = ex.getMessage();
 
-    return buildErrVM(status, message, null, ex, request, 404);
+    return buildErrVM(status, message, null, ex, request, 400);
   }
 
   @ExceptionHandler(KeycloakException.class)
   public ResponseEntity<ErrorVM> handleEmptyException(KeycloakException ex, ServerWebExchange request) {
+    HttpStatus status = HttpStatus.BAD_REQUEST;
+    String message = ex.getMessage();
+
+    return buildErrVM(status, message, null, ex, request, 400);
+  }
+
+  @ExceptionHandler(OtpException.class)
+  public ResponseEntity<ErrorVM> handleEmptyException(OtpException ex, ServerWebExchange request) {
+    HttpStatus status = HttpStatus.BAD_REQUEST;
+    String message = ex.getMessage();
+
+    return buildErrVM(status, message, null, ex, request, 400);
+  }
+
+  @ExceptionHandler(NotificationException.class)
+  public ResponseEntity<ErrorVM> handleNotifyException(NotificationException ex, ServerWebExchange request) {
     HttpStatus status = HttpStatus.BAD_REQUEST;
     String message = ex.getMessage();
 
