@@ -63,6 +63,7 @@ public class UserSettingsService {
   }
 
   public void updateUserSettings(ReqUserSettingsPut userSettings){
+    log.info("Updating user settings: {}", userSettings);
     for(ReqUserSettingsPut.NotificationTypePut type: userSettings.getNotificationTypes()){
       UserNotificationSettings user = this.userSettings.findByUserIdAndNotificationType_Name(userSettings.getUserId(), type.getName());
       user.setEmailEnabled(type.isEmailEnabled());
@@ -72,6 +73,7 @@ public class UserSettingsService {
   }
 
   public ResUserSettings getSettingsOfUser(String userId){ // get all to VM
+    log.info("Getting user settings: {}", userId);
     List<UserNotificationSettings> listSettings = this.userSettings.findByUserId(userId);
 
     ResUserSettings userSettings = new ResUserSettings();
@@ -131,7 +133,9 @@ public class UserSettingsService {
               WELCOME_TITLE,
               welcomeType.getId(),
               WELCOME_TITLE,
-              "Welcome to Lingo");
+              "Welcome to Lingo",
+              null
+      );
 
       this.rabbitTemplate.convertAndSend(notificationQueue, req);
 

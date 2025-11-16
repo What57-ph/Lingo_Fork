@@ -26,6 +26,7 @@ public class Notification {
   private NotificationType notificationType;
 
   private String message;
+  private String url;
   private boolean isRead;
   private Date readAt;
   private Date createdAt;

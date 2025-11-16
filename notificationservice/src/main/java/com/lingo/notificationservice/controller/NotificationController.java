@@ -15,7 +15,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/notifications")
+@RequestMapping("/api/v1/notifications")
 @RequiredArgsConstructor
 public class NotificationController {
 
@@ -54,7 +54,7 @@ public class NotificationController {
     return ResponseEntity.ok(response);
   }
 
-  // endpoint để lấy tất cả thông báo của một user
+  // endpoint để lấy tất cả thông báo của một user gồm các type user enabled
   @GetMapping("/user/{userId}")
   public ResponseEntity<List<ResNotification>> getAllNotificationsByUserId(@PathVariable String userId) {
     Iterable<ResNotification> notifications = notificationService.getAllNotificationByUserId(userId);

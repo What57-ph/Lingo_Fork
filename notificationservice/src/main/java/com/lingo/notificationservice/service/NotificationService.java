@@ -18,6 +18,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 @Slf4j
@@ -105,7 +106,8 @@ public class NotificationService {
                 req.getTitle(),
                 type.getId(),
                 type.getName(),
-                req.getMessage()
+                req.getMessage(),
+                req.getUrl()
         );
         this.rabbitTemplate.convertAndSend(notificationQueue, individualReq);
         log.info("Broadcasting notification to user {}: {}", us.getUserId(), req);
@@ -129,6 +131,7 @@ public class NotificationService {
       log.info("Notification {} is already read.", id);
       return;
     }
+    notification.setReadAt(new Date());
     notification.setRead(true);
     this.notificationRepository.save(notification);
   }

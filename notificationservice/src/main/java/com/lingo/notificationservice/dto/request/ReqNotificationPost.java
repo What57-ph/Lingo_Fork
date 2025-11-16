@@ -16,5 +16,6 @@ public class ReqNotificationPost {
   long notificationTypeId;
   String typeName;
   String message;
+  String url;
 
 }

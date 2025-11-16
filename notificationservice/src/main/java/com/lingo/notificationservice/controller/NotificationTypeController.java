@@ -14,7 +14,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/notification-types")
+@RequestMapping("/api/v1/notification-types")
 @RequiredArgsConstructor
 public class NotificationTypeController {
 

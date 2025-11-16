@@ -94,7 +94,6 @@ const accountSlice = createSlice({
   name: "accounts",
   initialState: {
     initialState,
-
   },
   reducers: {
     setPageNo: (state, action) => {

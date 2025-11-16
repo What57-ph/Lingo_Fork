@@ -13,7 +13,8 @@ import java.util.Date;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ResNotification {
-  private String userId;
+  private long id;
+//  private String userId;
   private String title;
   private String message;
   private boolean isRead;

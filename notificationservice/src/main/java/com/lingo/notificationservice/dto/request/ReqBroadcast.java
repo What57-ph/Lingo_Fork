@@ -11,4 +11,5 @@ public class ReqBroadcast {
   private long notificationTypeId;
   private String title;
   private String message;
+  private String url;
 }
