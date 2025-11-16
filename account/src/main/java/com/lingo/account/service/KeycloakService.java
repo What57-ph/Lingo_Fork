@@ -65,6 +65,19 @@ public class KeycloakService {
     return CreatedResponseUtil.getCreatedId(response);
   }
 
+  public void resetPassword(String email, String newPassword) throws KeycloakException {
+    UserRepresentation currentUser = keycloak.realm(keycloakPropsConfig.getRealm()).users().search(email).get(0);
+    if(currentUser != null){
+      CredentialRepresentation credentialRepresentation = this.createPasswordCredentials(newPassword);
+      currentUser.setCredentials(Collections.singletonList(credentialRepresentation));
+      getUserResource(currentUser.getId()).update(currentUser);
+    } else {
+      log.warn("User with email {} not found in Keycloak", email);
+      throw new KeycloakException(Constants.ErrorCode.KEYCLOAK_USER_NOT_FOUND);
+    }
+  }
+
+
   public CredentialRepresentation createPasswordCredentials(String password) {
     CredentialRepresentation pass = new CredentialRepresentation();
     pass.setType(CredentialRepresentation.PASSWORD);

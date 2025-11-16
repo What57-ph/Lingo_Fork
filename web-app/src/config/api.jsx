@@ -8,8 +8,6 @@ export const loginApi = (username, password) =>
 export const registerApi = (userData) =>
   publicInstance.post("/api/v1/account", userData
   );
-
-
 export const getUserInfoApi = (access_token) =>
   publicInstance.get("/realms/Lingo/protocol/openid-connect/userinfo", {
     baseURL: "http://localhost:8180",
@@ -32,24 +30,56 @@ export const registerGG = (userData, access_token) => {
       }
     }
   )
+};
+export const sendOTP = (email, reset) => {
+  return publicInstance.post(
+    `/api/v1/account/send-otp`,
+    null,
+    {
+      params: {
+        email: email,
+        resetPass: reset
+      }
+    }
+  )
+};
+export const verifyOTP = (email, value) => {
+  return publicInstance.post(
+    `/api/v1/account/verify-otp`,
+    null,
+    {
+      params: {
+        email,
+        otp: value
+      }
+    }
+  )
+};
+
+export const resetPassword = (email, password) => {
+  return publicInstance.put("/api/v1/account/reset-password", { email, password }
+  );
 }
 
+
+
+// auth end here 
 
 export const getListTests = (params) => {
   return instance.get("/api/v1/tests", { params });
-}
+};
 
 export const postAttempt = (testData) => {
-  return instance.post("/api/v1/attempt", testData);
-}
+  return publicInstance.post("/api/v1/attempt", testData);
+};
 
 export const getAttemptUserShort = (userId) => {
-  // return instance.get("api/v1/attempt", { params: { userId } })
-  return instance.get("api/v1/attempt", { params: { userId } })
+  // return publicInstance.get("api/v1/attempt", { params: { userId } })
+  return publicInstance.get("api/v1/attempt", { params: { userId } })
 };
 
 export const getAttempt = (attemptId) => {
-  return instance.get(`api/v1/attempt/${attemptId}`)
+  return publicInstance.get(`api/v1/attempt/${attemptId}`)
 };
 
 export function handleApiError(err, defaultMsg = "Có lỗi xảy ra") {
@@ -59,8 +89,8 @@ export function handleApiError(err, defaultMsg = "Có lỗi xảy ra") {
 };
 
 export const getAllAttempts = () => {
-  return instance.get(`api/v1/attempt/all`)
-}
+  return publicInstance.get(`api/v1/attempt/all`)
+};
 
 
 // account
@@ -99,3 +129,45 @@ export const removeAccount = (accountId) => {
 export const updateAvatar = (userData) => {
   publicInstance.post("/api/v1/account/avatar", userData);
 }
+
+// notification starts here 
+
+const notifiURL = "/api/v1/notifications";
+
+export const getNotificationsOfUser = (accountId) => {
+  return publicInstance.get(`${notifiURL}/user/${accountId}`)
+}
+
+export const getNotificationById = (notiId) => {
+  return publicInstance.get(`${notifiURL}/${notiId}`)
+}
+
+export const putNotificationAsRead = (notiId) => {
+  return publicInstance.put(`${notifiURL}/mark-as-read/${notiId}`)
+}
+
+export const deleteNotification = (notiId) => {
+  return publicInstance.delete(`${notifiURL}/${notiId}`)
+}
+
+// notification ends here 
+
+// notification settings start here 
+
+const NotiSettingsURL = "/api/v1/user-settings";
+
+export const getNotiUserSettings = (accountId) => {
+  return publicInstance.get(`${NotiSettingsURL}/${accountId}`)
+}
+
+// export const getNotiUserSettingsEnabled = (accountId) => {
+//   return publicInstance.get(`${NotiSettingsURL}/${accountId}/app-enabled`)
+// }
+
+export const putNotiUserSettings = (settings) => {
+  return publicInstance.put(`${NotiSettingsURL}`,
+    settings
+  )
+}
+
+// notification settings end here 

@@ -11,13 +11,16 @@ import com.lingo.account.model.Account;
 import com.lingo.account.model.Role;
 import com.lingo.account.repository.AccountRepository;
 import com.lingo.account.repository.AccountSpecifications;
+import com.lingo.account.repository.MessageService;
 import com.lingo.account.repository.RoleRepository;
 import com.lingo.account.utils.Constants;
 import com.lingo.common_library.exception.CreateUserException;
 import com.lingo.common_library.exception.KeycloakException;
 import com.lingo.common_library.exception.NotFoundException;
+import com.lingo.common_library.exception.OtpException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -37,17 +40,13 @@ public class AccountService {
   private final RoleService roleService;
   private final RoleRepository roleRepository;
   private final KeycloakService keycloakService;
+  private final OtpService otpService;
+  private final MessageService messageService;
+
   private final String USER = "USER";
 
-  public ResAccountDTO createNewAccount(ReqAccountDTO request) throws CreateUserException{
-
-    if (this.accountRepository.findByUsername(request.getUsername()).isPresent()){
-      throw new CreateUserException(Constants.ErrorCode.USER_NAME_ALREADY_EXITED);
-    }
-
-    if (this.accountRepository.findByEmail(request.getEmail()).isPresent()){
-      throw new CreateUserException(Constants.ErrorCode.EMAIL_ALREADY_EXITED);
-    }
+  public ResAccountDTO createNewAccount(ReqAccountDTO request) throws CreateUserException, OtpException {
+    this.otpService.verifyOtp(request.getEmail(), request.getOtp());
 
     try {
       List<String> roleNames = request.getRoles().length > 0 && request.getRoles()[0] != null
@@ -61,10 +60,22 @@ public class AccountService {
       log.info("KEYCLOAK, User created with id: {}", userId);
       account.setRoles(roles);
       this.accountRepository.save(account);
+      messageService.sendMessage(account);
       return accountMapper.toResDTO(account);
-    } catch (Exception e) {
+    } catch (Exception e ) {
       throw new CreateUserException("Error while creating new user: ", e.getMessage());
     }
+  }
+
+  public void sendOTP(String email, String OTP, boolean resetPass) {
+    if (!resetPass && this.accountRepository.findByEmail(email).isPresent()){
+      throw new CreateUserException(Constants.ErrorCode.EMAIL_ALREADY_EXITED);
+    }
+    if (resetPass && this.accountRepository.findByEmail(email).isEmpty()){
+      throw new CreateUserException(Constants.ErrorCode.USER_NOT_FOUND);
+    }
+
+    this.otpService.sendOtp(email, OTP);
   }
 
   public ResAccountDTO getAccount(String id) throws NotFoundException {
@@ -177,6 +188,7 @@ public class AccountService {
               this.roleService.assignRole(req.getSub(), Collections.singletonList(USER)); // assign in keycloak
               account.setRoles(this.roleRepository.findAllByNameIn(List.of(USER)));
               this.accountRepository.save(account);
+              messageService.sendMessage(account);
               log.info("Created new account for email {}", req.getEmail());
               return accountMapper.toResDTO(account);
             });

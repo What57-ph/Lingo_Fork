@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class  ReqAccountDTO {
+  private String otp ;
   private String email;
   private String username;
   private String firstName;
