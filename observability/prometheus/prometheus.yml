@@ -5,29 +5,29 @@ scrape_configs:
   - job_name: "api-gateway"
     metrics_path: "/actuator/prometheus"
     static_configs:
-      - targets: ["172.20.10.3:8080"]
+      - targets: ["192.168.1.159:8080"]
 
   - job_name: "account-service"
     metrics_path: "/actuator/prometheus"
     static_configs:
-      - targets: ["172.20.10.3:9001"]
+      - targets: ["192.168.1.159:9001"]
 
   - job_name: "discovery-server"
     metrics_path: "/actuator/prometheus"
     static_configs:
-      - targets: ["172.20.10.3:8761"]
+      - targets: ["192.168.1.159:8761"]
 
   - job_name: "attempt-service"
     metrics_path: "/actuator/prometheus"
     static_configs:
-      - targets: ["172.20.10.3:9003"]
+      - targets: ["192.168.1.159:9003"]
 
   - job_name: "file-service"
     metrics_path: "/actuator/prometheus"
     static_configs:
-      - targets: ["172.20.10.3:9004"]
+      - targets: ["192.168.1.159:9004"]
 
   - job_name: "test-service"
     metrics_path: "/actuator/prometheus"
     static_configs:
-      - targets: ["172.20.10.3:9002"]
+      - targets: ["192.168.1.159:9002"]

@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { FaFileExcel } from 'react-icons/fa';
 import { HiSpeakerWave } from 'react-icons/hi2';
 import { FaRegImage } from "react-icons/fa6";
+import { toast } from 'react-toastify';
 
 import { useDispatch, useSelector } from 'react-redux';
 import * as XLSX from "xlsx";
@@ -13,44 +14,107 @@ const UploadDragger = ({ type, testTitle, mediaUrl, form, typeUpload }) => {
     const dispatch = useDispatch();
     const [fileList, setFileList] = useState([]);
     const { excelData, questionList, answerList, error, uploadedFiles, loading } = useSelector((state) => state.file);
+
+    const getFileTypeName = (type) => {
+        switch (type) {
+            case "Excel":
+                return "File câu hỏi Excel";
+            case "LISTENING_AUDIO":
+                return "File âm thanh toàn đề";
+            case "QUESTION_AUDIO":
+                return "File âm thanh câu hỏi";
+            case "QUESTION_IMAGE":
+                return "File hình ảnh";
+            default:
+                return "File";
+        }
+    };
+
     const beforeUploadExcel = (file) => {
         dispatch(readExcelFile(file))
             .unwrap()
             .then(() => {
-                // console.log("Test title:", testTitle);
                 dispatch(extractData({ testTitle: testTitle, mediaUrl: mediaUrl }));
+                toast.success(`${file.name} đã được xử lý thành công!`, {
+                    position: "top-right",
+                    autoClose: 3000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                });
             })
+            .catch((err) => {
+                toast.error(`Lỗi khi xử lý file Excel: ${err.message || 'Vui lòng thử lại'}`, {
+                    position: "top-right",
+                    autoClose: 4000,
+                });
+            });
         return false;
     }
-    const handleUploadResourceContent = (options) => {
-        // console.log(options);
 
+    const handleUploadResourceContent = (options) => {
         const { file, onSuccess, onError } = options;
         const newFiles = [...fileList, file];
         setFileList(newFiles);
-        // console.log("uploaded files when handle", newFiles)
+
         if (!form.getFieldValue("title")) {
-            alert("Vui lòng nhập Tên bài thi trước khi upload");
+            toast.error("Vui lòng nhập Tên bài thi trước khi upload!", {
+                position: "top-right",
+                autoClose: 3000,
+            });
             onError("Missing test title");
             return;
         }
+
         dispatch(saveMultipleFiles({ files: newFiles, testTitle: form.getFieldValue("title"), fileCategory: type },
             { dispatch: dispatch }))
             .unwrap()
             .then(() => {
                 onSuccess("ok");
+                const fileTypeName = getFileTypeName(type);
+                toast.success(`${fileTypeName} đã được tải lên thành công!`, {
+                    position: "top-right",
+                    autoClose: 3000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                });
             })
             .catch(err => {
                 onError(err);
+                toast.error(`Lỗi khi tải lên: ${err.message || 'Vui lòng thử lại'}`, {
+                    position: "top-right",
+                    autoClose: 4000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                });
             });
     };
+
     console.log("file uploaded:", uploadedFiles)
+
     return (
         <Card className="uploadFrame">
             <Upload.Dragger
                 fileList={fileList}
                 onRemove={(file) => {
                     setFileList((prev) => prev.filter((f) => f.uid !== file.uid));
+                    toast.info(`Đã xóa file: ${file.name}`, {
+                        position: "top-right",
+                        autoClose: 2000,
+                    });
+                }}
+                itemRender={(originNode, file) => {
+                    // Custom render for file list items
+                    return (
+                        <div className="ant-upload-list-item">
+                            {originNode}
+                        </div>
+                    );
                 }}
                 customRequest={handleUploadResourceContent}
                 multiple={type === "Excel" || type === "LISTENING_AUDIO" ? false : true}
@@ -79,13 +143,6 @@ const UploadDragger = ({ type, testTitle, mediaUrl, form, typeUpload }) => {
                             : <>Hỗ trợ .png, .jpg, .jpeg, webp (tối đa 50MB)</>}
                 </p>
             </Upload.Dragger>
-
-            {/* 👇 Preview parsed JSON */}
-            {excelData.length > 0 && (
-                <pre className="bg-gray-100 p-2 mt-4 overflow-x-auto text-xs">
-                    {JSON.stringify(excelData, null, 2)}
-                </pre>
-            )}
         </Card>
     );
 };
