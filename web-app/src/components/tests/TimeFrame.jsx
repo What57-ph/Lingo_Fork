@@ -141,7 +141,7 @@ const TimeFrame = ({ editMode, setEditMode }) => {
             <div className="mt-3">
                 <div className="flex justify-between items-center">
                     <p className="text-gray-200 text-[14px] mb-1 font-semibold">Overall Progress</p>
-                    <p className="text-[#ffffff] text-[14px] font-semibold">{progress}% Complete</p>
+                    <p className="text-[#ffffff] text-[14px] font-semibold">{Math.round(progress)}% Complete</p>
                 </div>
 
                 <Progress
