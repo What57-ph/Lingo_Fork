@@ -16,8 +16,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 public interface CommentService {
@@ -41,8 +42,8 @@ class CommentServiceImpl implements CommentService {
     private final NotifyClient notifyClient;
 
     @Override
-    @jakarta.transaction.Transactional
-    @CacheEvict(value = "commentsByTest", key = "#dto.testId")
+    @Transactional
+    @CacheEvict(value = "commentsOfTest", key = "#dto.testId")
     public ResponseCommentDTO add(RequestCommentDTO dto) {
         Comment comment = commentMapper.toComment(dto);
         comment.setStatus(CommentStatus.ACTIVE);
@@ -51,21 +52,37 @@ class CommentServiceImpl implements CommentService {
         if (dto.getReplyId() != null) {
             comment.setReply(commentRepository.findById(dto.getReplyId()).orElse(null));
         }
-        if ("ANSWER".equalsIgnoreCase(String.valueOf(dto.getType()))) {
+
+        // Send notification when replying to a comment
+        if ("ANSWER".equalsIgnoreCase(String.valueOf(dto.getType()))
+                && dto.getCommentOwnerId() != null
+                && dto.getUserId() != null
+                && !dto.getUserId().equals(dto.getCommentOwnerId())) { // Don't notify if replying to own comment
             try {
+                log.info("Preparing notification for reply - From userId={} to commentOwnerId={}",
+                        dto.getUserId(), dto.getCommentOwnerId());
+
                 ReqNotificationPost requestNotify = new ReqNotificationPost();
                 requestNotify.setMessage(dto.getContent());
-                requestNotify.setUrl(String.format("/tests/%s/%s", dto.getTestId(), dto.getTestTitle().replaceAll("_","-")));
+                // Include the comment ID in the URL so we can scroll to it
+                requestNotify.setUrl(String.format("/tests/%s/%s#comment-%s",
+                        dto.getTestId(),
+                        dto.getTestTitle() != null ? dto.getTestTitle().replaceAll("_", "-") : dto.getTestId(),
+                        dto.getReplyId())); // Add the parent comment ID as hash
                 requestNotify.setUserId(dto.getCommentOwnerId());
                 requestNotify.setTypeName("COMMENT_REPLY");
                 requestNotify.setTitle("Một bình luận của bạn vừa được phản hồi");
                 requestNotify.setNotificationTypeId(6);
 
                 notifyClient.createNotification(requestNotify);
-                log.info("Notification sent to userId={}", dto.getUserId());
+                log.info("Notification successfully sent to commentOwnerId={}", dto.getCommentOwnerId());
             } catch (Exception e) {
-                log.error("Error sending notification", e);
+                log.error("Failed to send notification to commentOwnerId={}: {}",
+                        dto.getCommentOwnerId(), e.getMessage(), e);
             }
+        } else {
+            log.debug("Notification not sent - Type: {}, CommentOwnerId: {}, UserId: {}",
+                    dto.getType(), dto.getCommentOwnerId(), dto.getUserId());
         }
 
         Comment saved = commentRepository.save(comment);
@@ -73,7 +90,8 @@ class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    @CacheEvict(value = "commentsByTest", key = "#dto.testId")
+    @Transactional
+    @CacheEvict(value = "commentsOfTest", key = "#dto.testId")
     public ResponseCommentDTO update(RequestCommentDTO dto, long id) {
         Comment existing = commentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Comment not found with id: " + id));
@@ -86,19 +104,31 @@ class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    @CacheEvict(value = "commentsByTest", key = "#existing.testId")
+    @Transactional
     public void delete(long id) {
         Comment existing = commentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Comment not found with id: " + id));
-        List<Comment> comments= commentRepository.findByReplyId(id);
-        comments.stream().peek(comment -> comment.setStatus(CommentStatus.INACTIVE)).collect(Collectors.toList());
+
+        // Evict cache using the testId from the existing comment
+        evictTestCache(existing.getTestId());
+
+        // Mark all replies as inactive
+        List<Comment> comments = commentRepository.findByReplyId(id);
+        comments.forEach(comment -> comment.setStatus(CommentStatus.INACTIVE));
+        commentRepository.saveAll(comments);
+
+        // Mark the parent comment as inactive
         existing.setStatus(CommentStatus.INACTIVE);
         commentRepository.save(existing);
     }
 
+    @CacheEvict(value = "commentsOfTest", key = "#testId")
+    public void evictTestCache(Long testId) {
+        log.debug("Evicting cache for testId: {}", testId);
+    }
+
     @Override
     public List<ResponseCommentDTO> getAll() {
-
         return commentRepository.findAll()
                 .stream()
                 .filter(comment -> comment.getStatus() == CommentStatus.ACTIVE)
@@ -110,8 +140,9 @@ class CommentServiceImpl implements CommentService {
     public ResponseCommentDTO getOne(long id) throws Exception {
         Comment comment = commentRepository.findById(id)
                 .orElseThrow(() -> new Exception("Comment not found with id: " + id));
-        ResAccountDTO accountInfo=accountClient.getAccountInfo(comment.getUserId());
-        ResponseCommentDTO response= commentMapper.toCommentResponse(comment);
+
+        ResAccountDTO accountInfo = accountClient.getAccountInfo(comment.getUserId());
+        ResponseCommentDTO response = commentMapper.toCommentResponse(comment);
         response.setAvatar(accountInfo.getAvatar());
         response.setUsername(accountInfo.getUsername());
 
@@ -120,43 +151,46 @@ class CommentServiceImpl implements CommentService {
 
     @Override
     public List<ResponseCommentDTO> getAnswerOfComment(long replyId) {
-        List<Comment> comments= commentRepository.findByReplyId(replyId);
-        List<ResponseCommentDTO> responses= comments.stream().map(commentMapper :: toCommentResponse).collect(Collectors.toList());
+        List<Comment> comments = commentRepository.findByReplyId(replyId);
+        List<ResponseCommentDTO> responses = comments.stream()
+                .map(commentMapper::toCommentResponse)
+                .collect(Collectors.toList());
 
-        return responses.stream().peek(comment -> {
-            try {
-                ResAccountDTO accountInfo= accountClient.getAccountInfo(comment.getUserId());
-                if (accountInfo !=null){
-                    comment.setUsername(accountInfo.getFirstName() + " " +accountInfo.getLastName());
-                    comment.setAvatar(accountInfo.getAvatar());
-                }
-            } catch (Exception e) {
-                log.error(e.getMessage());
-                return;
-            }
-
-
-        }).collect(Collectors.toList());
+        return responses.stream()
+                .peek(comment -> {
+                    try {
+                        ResAccountDTO accountInfo = accountClient.getAccountInfo(comment.getUserId());
+                        if (accountInfo != null) {
+                            comment.setUsername(accountInfo.getFirstName() + " " + accountInfo.getLastName());
+                            comment.setAvatar(accountInfo.getAvatar());
+                        }
+                    } catch (Exception e) {
+                        log.error("Error fetching account info for userId: {}", comment.getUserId(), e);
+                    }
+                })
+                .collect(Collectors.toList());
     }
 
     @Override
-    @Cacheable(value = "commentsOfTest",key = "#testId")
+    @Cacheable(value = "commentsOfTest", key = "#testId")
     public List<ResponseCommentDTO> getCommentsOfTest(long testId) {
-        List<Comment> comments=commentRepository.findByTestId(testId);
-        List<ResponseCommentDTO> responses= comments.stream().map(commentMapper :: toCommentResponse).collect(Collectors.toList());
+        List<Comment> comments = commentRepository.findByTestId(testId);
+        List<ResponseCommentDTO> responses = comments.stream()
+                .map(commentMapper::toCommentResponse)
+                .collect(Collectors.toList());
 
-        return responses.stream().peek(response ->{
-            try {
-                ResAccountDTO accountDTO =accountClient.getAccountInfo(response.getUserId());
-                if (accountDTO !=null){
-                    response.setUsername(accountDTO.getFirstName() + " "+ accountDTO.getLastName());
-                    response.setAvatar(accountDTO.getAvatar());
-                }
-            } catch (Exception e){
-                log.error(e.getMessage());
-                return ;
-            }
-
-        }).collect(Collectors.toList());
+        return responses.stream()
+                .peek(response -> {
+                    try {
+                        ResAccountDTO accountDTO = accountClient.getAccountInfo(response.getUserId());
+                        if (accountDTO != null) {
+                            response.setUsername(accountDTO.getFirstName() + " " + accountDTO.getLastName());
+                            response.setAvatar(accountDTO.getAvatar());
+                        }
+                    } catch (Exception e) {
+                        log.error("Error fetching account info for userId: {}", response.getUserId(), e);
+                    }
+                })
+                .collect(Collectors.toList());
     }
 }

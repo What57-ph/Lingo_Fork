@@ -5,12 +5,20 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7807224a-69f2-4995-954d-4271220bc1ae" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/Lingo_Fork.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/testservice/src/main/java/com/lingo/testservice/model/dto/request/ReqBroadcast.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/commentservice/src/main/java/com/lingo/commentservice/dto/request/RequestCommentDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/commentservice/src/main/java/com/lingo/commentservice/dto/request/RequestCommentDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/commentservice/src/main/java/com/lingo/commentservice/dto/request/RequestReplyDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/commentservice/src/main/java/com/lingo/commentservice/dto/request/RequestReplyDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/commentservice/src/main/java/com/lingo/commentservice/model/Comment.java" beforeDir="false" afterPath="$PROJECT_DIR$/commentservice/src/main/java/com/lingo/commentservice/model/Comment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/account/src/main/java/com/lingo/account/controller/AccountController.java" beforeDir="false" afterPath="$PROJECT_DIR$/account/src/main/java/com/lingo/account/controller/AccountController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/account/src/main/java/com/lingo/account/service/AccountService.java" beforeDir="false" afterPath="$PROJECT_DIR$/account/src/main/java/com/lingo/account/service/AccountService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/commentservice/src/main/java/com/lingo/commentservice/service/CommentService.java" beforeDir="false" afterPath="$PROJECT_DIR$/commentservice/src/main/java/com/lingo/commentservice/service/CommentService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notificationservice/src/main/java/com/lingo/notificationservice/dto/response/ResNotification.java" beforeDir="false" afterPath="$PROJECT_DIR$/notificationservice/src/main/java/com/lingo/notificationservice/dto/response/ResNotification.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/testservice/src/main/java/com/lingo/testservice/httpClient/NotifyClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/testservice/src/main/java/com/lingo/testservice/httpClient/NotifyClient.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/testservice/src/main/java/com/lingo/testservice/service/TestService.java" beforeDir="false" afterPath="$PROJECT_DIR$/testservice/src/main/java/com/lingo/testservice/service/TestService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web-app/src/components/share/Announce.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/web-app/src/components/share/Announce.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web-app/src/components/tests/BoxComment.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/web-app/src/components/tests/BoxComment.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web-app/src/components/tests/SingleComment.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/web-app/src/components/tests/SingleComment.jsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -108,8 +116,8 @@
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "IntegrateNotify",
-    "last_opened_file_path": "C:/Project/Lingo/fileservice/src/main/resources",
+    "git-widget-placeholder": "main",
+    "last_opened_file_path": "C:/Project/ATI_Project/Lingo_Fork",
     "project.structure.last.edited": "Modules",
     "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.2",
@@ -121,16 +129,17 @@
       <recent name="C:\Project\Lingo\fileservice\src\main\resources" />
     </key>
     <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="com.lingo.testservice.model.dto.request" />
       <recent name="com.lingo.testservice.httpClient" />
     </key>
   </component>
   <component name="RunManager" selected="Application.CommentserviceApplication">
-    <configuration name="AccountApplication" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="com.lingo.account.AccountApplication" />
-      <module name="account" />
+    <configuration name="AttemptApplication" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="com.lingo.attempt.AttemptApplication" />
+      <module name="attempt" />
       <extension name="coverage">
         <pattern>
-          <option name="PATTERN" value="com.lingo.account.*" />
+          <option name="PATTERN" value="com.lingo.attempt.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
@@ -177,12 +186,12 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="NotificationserviceApplication" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="com.lingo.notificationservice.NotificationserviceApplication" />
-      <module name="notificationservice" />
+    <configuration name="TestserviceApplication" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="com.lingo.testservice.TestserviceApplication" />
+      <module name="testservice" />
       <extension name="coverage">
         <pattern>
-          <option name="PATTERN" value="com.lingo.notificationservice.*" />
+          <option name="PATTERN" value="com.lingo.testservice.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
@@ -192,11 +201,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Application.TestserviceApplication" />
         <item itemvalue="Application.CommentserviceApplication" />
-        <item itemvalue="Application.NotificationserviceApplication" />
-        <item itemvalue="Application.AccountApplication" />
-        <item itemvalue="Application.ChatbotApplication" />
         <item itemvalue="Application.FileserviceApplication" />
+        <item itemvalue="Application.AttemptApplication" />
+        <item itemvalue="Application.ChatbotApplication" />
       </list>
     </recent_temporary>
   </component>

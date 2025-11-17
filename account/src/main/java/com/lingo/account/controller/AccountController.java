@@ -49,6 +49,15 @@ public class AccountController {
             pageNo, pageSize, search, search, role, from, to
     ));
   }
+  @GetMapping("/getByUsername/{username}")
+  @Operation(summary = "Find account by username", description = "Return 200 if getting all account successfully")
+  @ApiResponses({
+          @ApiResponse(responseCode = "200", description = "Account found", content = @Content(mediaType = "application/json")),
+          @ApiResponse(responseCode = "400", description = "Wrong/not valid account", content = @Content(mediaType = "application/json")),
+  })
+  public ResponseEntity<ResAccountDTO> getAccountByUsername(@PathVariable String username){
+    return ResponseEntity.ok(this.accountService.getAccountByUsername(username));
+  }
 
   @GetMapping("/{id}")
   @Operation(summary = "Find account by id", description = "Return 200 if getting all account successfully")
