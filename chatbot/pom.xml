@@ -87,6 +87,16 @@
 			<artifactId>spring-ai-model-chat-memory-repository-jdbc</artifactId>
 			<version>1.0.0</version>
 		</dependency>
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>2.8.11</version>
+		</dependency>
+		<dependency>
+			<groupId>com.lingo</groupId>
+			<artifactId>common-library</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
 	<dependencyManagement>
 		<dependencies>
