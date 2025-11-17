@@ -159,11 +159,7 @@ const QuestionCard = ({ groupKey, questionRefs, resourceContent, editMode, quest
                     })),
                 }}
             >
-                <audio controls className="w-full my-3 mx-auto">
-                    <source src={questions[0].explanationResourceContent
-                    } type="audio/mpeg" />
-                    Your browser does not support the audio element.
-                </audio>
+
 
                 <div className="flex gap-8 xl:flex-row flex-col">
                     {/* Passage section */}

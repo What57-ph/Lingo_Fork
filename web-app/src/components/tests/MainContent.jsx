@@ -40,15 +40,17 @@ const MainContent = React.memo(({ editMode, testTitle, testId }) => {
     }, [questions]);
 
 
-    // console.log("groupedArray", groupedArray);
+    console.log("groupedArray", groupedArray[listQuestionNumber]);
 
     const questionCardComponents = React.useMemo(() =>
 
         groupedArray.map(({ part, resources }) => (
             <div key={part} className="mb-8">
-                {groupedArray[listQuestionNumber].resources.groupedByCommonTitle?.[0].questions[0].category === "LISTENING" && test.type === "IELTS" && (
+
+                {groupedArray[listQuestionNumber].resources?.[0].groupedByCommonTitle?.[0].questions[0].category === "LISTENING" && test.type === "IELTS" && (
                     <div className="ml-8 my-4 w-[90%]">
                         <audio controls className="w-full">
+                            {console.log("debug url", groupedArray[listQuestionNumber].resources?.[0].groupedByCommonTitle[0].questions[0].explanationResourceContent)}
                             <source src={groupedArray[listQuestionNumber].resources?.[0].groupedByCommonTitle[0].questions[0].explanationResourceContent} type="audio/mpeg" />
                             Your browser does not support the audio element.
                         </audio>
