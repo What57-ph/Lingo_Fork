@@ -8,11 +8,15 @@ import questionReducer from "../slice/questions";
 import answerReducer from "../slice/answers";
 import fileReducer from "../slice/files";
 import resourceReducer from "../slice/resource";
+import speakingSlice from "../slice-ATI/speaking";
+import writingSlice from "../slice-ATI/writing";
 import notificationSlice from "../slice/notifications";
 import settingsSlice from "../slice/notificationSettings";
+import chatReducer from "../slice/chat";
 const reducer = {
     test: testReducer,
     questions: questionReducer,
+    chat: chatReducer,
     answers: answerReducer,
     file: fileReducer,
     resource: resourceReducer,
@@ -20,9 +24,11 @@ const reducer = {
     tests: testListSlice,
     attempts: attemptSlice,
     accounts: accountSlice,
+    speaking: speakingSlice,
+    writing: writingSlice,
     notifications: notificationSlice,
     settings: settingsSlice
-}
+};
 export const store = configureStore({
     reducer: reducer,
     devTools: true

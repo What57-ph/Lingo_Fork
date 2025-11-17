@@ -41,7 +41,7 @@ const TopQuizzes = ({ topQuizzes }) => {
 
                         <div className='flex-grow mx-3'>
                             <Text className='block font-semibold text-base text-gray-800 leading-snug'>
-                                {test.title}
+                                {test.title.replaceAll("_", " ")}
                             </Text>
                             <Tag color="blue" className='!mt-1 !mb-0'>
                                 {test.type}
