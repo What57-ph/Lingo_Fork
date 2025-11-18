@@ -97,7 +97,7 @@ const QuestionCard = ({ groupKey, questionRefs, resourceContent, editMode, quest
                 explanationResourceContent: question.explanationResourceContent,
                 commonTitle: question.commonTitle,
             };
-
+            console.log("updating question data,", updatingQuestion)
             dispatch(modifyQuestion({ id: question.id, question: updatingQuestion }));
         });
     };
@@ -136,6 +136,7 @@ const QuestionCard = ({ groupKey, questionRefs, resourceContent, editMode, quest
         }
     }, [questions]);
 
+    // console.log("passage:", form.getFieldValue("passage"));
     return (
         <>
             <Form
