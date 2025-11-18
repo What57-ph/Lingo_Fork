@@ -6,10 +6,11 @@ import { FaEdit } from "react-icons/fa";
 import { submitUserAnswer } from "../../slice/tests";
 import _ from "lodash";
 import { createAttempts } from "../../slice/attempts";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 
 const TimeFrame = ({ editMode, setEditMode }) => {
     const dispatch = useDispatch();
+    const { id, name } = useParams();
     const { userAnswers, questions } = useSelector((state) => state.questions);
     const { user } = useSelector((state) => state.authentication);
     const { loading } = useSelector((state) => state.attempts);
@@ -18,11 +19,26 @@ const TimeFrame = ({ editMode, setEditMode }) => {
     const [timeLimitFormat, setTimeLimitFormat] = useState();
     const [progress, setProgress] = useState(0);
     const [modalSubmit, setModalSubmit] = useState(false);
+    const [modalExit, setModalExit] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
     const userInfo = JSON.parse(localStorage.getItem("user_info") || "{}");
     const roles = userInfo.roles || [];
 
+    const showModalExit = () => {
+        setModalExit(true);
+    };
+
+    const handleExitConfirm = () => {
+        setModalExit(false);
+
+        navigate(`/tests/${id}/${name}`);
+    };
+
+    const handleExitCancel = () => {
+        setModalExit(false);
+    };
+    // console.log(id, name)
     useEffect(() => {
         if (test?.timeLimit) {
             setTimeRemaining(test.timeLimit * 60);
@@ -106,7 +122,7 @@ const TimeFrame = ({ editMode, setEditMode }) => {
                         onClick={() => setEditMode(!editMode)}
                     >
                         {editMode ? (
-                            <span className="flex items-center gap-2">
+                            <span className="flex items-center gap-2" >
                                 <IoIosExit className="text-2xl" /> Exit Edit
                             </span>
                         ) : (
@@ -120,7 +136,9 @@ const TimeFrame = ({ editMode, setEditMode }) => {
 
                 <div className="flex gap-4 col-span-2 justify-center lg:justify-baseline sm:mt-0 mt-6">
                     <p className="text-[#ffffff] text-base ">Time: <span className="font-bold">{timeLimitFormat}</span></p>
-                    <Button className="!bg-red-600 !h-8 !w-24 !text-[#ffffff] !border-none !px-4 !text-sm hover:!bg-red-700">
+                    <Button
+                        onClick={() => navigate(`/tests/${id}/${name}`)}
+                        className="!bg-red-600 !h-8 !w-24 !text-[#ffffff] !border-none !px-4 !text-sm hover:!bg-red-700">
                         Exit Test
                     </Button>
                     <Button htmlType="submit" onClick={showModalSubmit} className="hover:!bg-black !border-0 w-28">
