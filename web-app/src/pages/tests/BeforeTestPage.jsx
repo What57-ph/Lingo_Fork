@@ -18,7 +18,7 @@ import RightSider from "../../components/tests/RightSider";
 import HistoryAttempts from "../../components/tests/BeforePage/HistoryAttempts";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { retrieveCommentsOfTest } from "../../slice/commentSlice";
 import { retrieveSingleTest } from "../../slice/tests";
 
@@ -29,6 +29,7 @@ const BeforeTestPage = () => {
   const { id } = useParams();
   const [testInfo, setTestInfo] = useState(null);
   const dispatch = useDispatch();
+<<<<<<< HEAD
   const { commentOfTest } = useSelector(state => state.comments);
   useEffect(() => {
     dispatch(retrieveCommentsOfTest(id))
@@ -43,6 +44,47 @@ const BeforeTestPage = () => {
       });
   }, [dispatch, id]);
 
+  const hasScrolled = useRef(false);
+  const { commentOfTest, loading } = useSelector((state) => state.comments);
+
+  useEffect(() => {
+    const scrollToCommentId = location.state?.scrollToCommentId;
+
+    if (scrollToCommentId && !hasScrolled.current && !loading && commentOfTest.length > 0) {
+
+      const attemptScroll = (attempts = 0, maxAttempts = 15) => {
+        const commentElement = document.getElementById(scrollToCommentId);
+
+        if (commentElement) {
+
+          setTimeout(() => {
+            commentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            commentElement.style.transition = 'background-color 0.3s ease';
+
+            setTimeout(() => {
+              commentElement.style.backgroundColor = '';
+            }, 2500);
+          }, 100);
+
+          hasScrolled.current = true;
+        } else if (attempts < maxAttempts) {
+
+          setTimeout(() => {
+            attemptScroll(attempts + 1, maxAttempts);
+          }, 200);
+        }
+      };
+
+      setTimeout(() => attemptScroll(), 300);
+    }
+
+    return () => {
+      if (location.state?.scrollToCommentId) {
+        hasScrolled.current = false;
+      }
+    };
+  }, [location.state, loading, commentOfTest]);
 
   const handleDoTest = () => navigate(location.pathname + "/doTests");
 
