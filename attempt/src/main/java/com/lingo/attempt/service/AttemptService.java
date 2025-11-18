@@ -38,6 +38,8 @@ public class AttemptService {
   }
   
   public Long createAttempt(ReqAttemptDTO req) {
+    logger.info("Length type test: {}", req.getField().length);
+
     validateRequest(req);
     Attempt attempt = buildAttempt(req);
 
@@ -124,6 +126,41 @@ public class AttemptService {
     }
   }
 
+  public void deleteAttempt(Long attemptId) {
+    if (attemptId == null) {
+      throw new EmptyException("Attempt ID is required");
+    }
+
+    Attempt attempt = this.attemptRepository.findById(attemptId)
+            .orElseThrow(() -> new NotFoundException(Constants.ATTEMPT_NOT_FOUND));
+
+    logger.info("Deleting attempt with ID: {}", attemptId);
+    this.attemptRepository.delete(attempt);
+    logger.info("Successfully deleted attempt with ID: {}", attemptId);
+  }
+
+  public long countUserAttempts(String userId) {
+    if (userId == null || userId.trim().isEmpty()) {
+      throw new EmptyException("User ID is required");
+    }
+
+    long count = this.attemptRepository.countByUserId(userId);
+    logger.info("User {} has {} attempts", userId, count);
+    return count;
+  }
+
+  public Long getMaxScoreByUser(String userId) {
+    if (userId == null || userId.trim().isEmpty()) {
+      throw new EmptyException("User ID is required");
+    }
+
+    Optional<Long> maxScore = this.attemptRepository.findMaxScoreByUserId(userId);
+    Long result = maxScore.orElse(0L);
+    logger.info("Max score for user {}: {}", userId, result);
+    return result;
+  }
+
+
   private void validateRequest(ReqAttemptDTO req) {
     if (req == null || req.getAnswers() == null || req.getAnswers().isEmpty()) {
       throw new EmptyException(Constants.EMPTY_REQUEST);
@@ -163,6 +200,7 @@ public class AttemptService {
   private Attempt buildAttempt(ReqAttemptDTO req) {
     Attempt attempt = new Attempt();
     attempt.setQuizId(req.getQuizId());
+    attempt.setTestTitle(req.getTestTitle());
     attempt.setTimeTaken(req.getTimeTaken());
     attempt.setType(req.getType());
     // user id get with JWT
