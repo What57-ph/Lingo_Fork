@@ -114,6 +114,10 @@ function App() {
               path: "tests/writing/:id/:title/results/:attemptId",
               element: <WritingResultPage />,
             },
+            {
+              path: "tests/writing/results/practice",
+              element: <WritingResultPage />,
+            },
           ]
         },
         {

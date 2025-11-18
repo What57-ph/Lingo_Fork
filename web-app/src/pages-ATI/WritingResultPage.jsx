@@ -4,7 +4,6 @@ import { useDispatch, useSelector } from "react-redux";
 import WritingDisplayPanel from "../components-ATI/writing/WritingDisplayPanel";
 import WritingAnalysisPanel from "../components-ATI/writing/WritingAnalysisPanel";
 import { retrieveAttempt, updateAttempt } from "../slice/attempts";
-// (Import action 'setWritingResult' mới)
 import { createSubmit, resetWritingResult, setWritingResult } from "../slice-ATI/writing";
 import { retrieveQuestionForTest } from "../slice/questions";
 
@@ -13,17 +12,21 @@ export default function WritingResultPage() {
   const [isResizing, setIsResizing] = useState(false);
   const containerRef = useRef(null);
   const [promptImageUrl, setPromptImageUrl] = useState(null);
-  // (Đổi tên cờ: cờ này có nghĩa là "Đã xử lý xong")
   const [isProcessed, setIsProcessed] = useState(false);
 
-  const { attemptId } = useParams();
+  const { id: attemptId } = useParams();
   const location = useLocation();
   const dispatch = useDispatch();
 
+  // Kiểm tra Practice Mode
+  const isPracticeMode = attemptId === 'practice';
+
+  // Lấy dữ liệu từ state khi chuyển trang
   const taskFromState = location.state?.task;
   const essayFromState = location.state?.essay;
   const imageFromState = location.state?.promptImage;
 
+  // Redux state
   const {
     attempt,
     loading: attemptLoading,
@@ -57,82 +60,98 @@ export default function WritingResultPage() {
   }, [questions]);
 
 
-  // useEffect 1: Reset state khi ID thay đổi
+  // 1. Reset kết quả AI khi vào trang mới
   useEffect(() => {
     dispatch(resetWritingResult());
-    setIsProcessed(false); // Reset cờ xử lý
+    setIsProcessed(false);
   }, [attemptId, dispatch]);
 
-  // useEffect 2: Fetch attempt (Luôn chạy)
+  // 2. Fetch Attempt (CHỈ cho Lock Mode)
   useEffect(() => {
-    if (attemptId) {
+    if (attemptId && !isPracticeMode) {
       dispatch(retrieveAttempt(attemptId));
     }
-  }, [attemptId, dispatch]);
+  }, [attemptId, dispatch, isPracticeMode]);
 
-  // useEffect 3: Fetch quiz data (Nếu cần)
+  // 3. Fetch Đề bài thật (CHỈ cho Lock Mode và có attempt)
   useEffect(() => {
-    const quizId = attempt?.quizId; // e.g., 23
-
-    if (!attemptLoading && attempt && quizId && quizId > 0) {
+    const quizId = attempt?.quizId;
+    if (!attemptLoading && attempt && quizId && quizId > 0 && !isPracticeMode) {
       const isDataMissing = !questions || questions.length === 0;
       const isDataMismatched = questions && questions.length > 0 && questions[0]?.testId !== quizId;
 
       if (isDataMissing || isDataMismatched) {
-        console.log(`(Flow Mới/F5) Fetching đề bài thật với ID: ${quizId}`);
+        console.log(`(F5/History) Fetching đề bài thật với ID: ${quizId}`);
         dispatch(retrieveQuestionForTest(quizId));
       }
     }
-  }, [attempt, attemptLoading, dispatch, questions]);
+  }, [attempt, attemptLoading, dispatch, questions, isPracticeMode]);
 
-  // (LOGIC MỚI) useEffect 4: Xử lý xem lịch sử (History Flow)
+  // 4. Xử lý xem Lịch sử (History Flow) - CHỈ cho Lock Mode
   useEffect(() => {
-    // Nếu 'attempt' đã tải VÀ 'attempt' có chứa feedback cũ (giả sử tên là 'aiFeedback')
-    // VÀ chúng ta chưa xử lý
-    // (Giả định: 'attempt.aiFeedback' là trường bạn lưu JSON nhận xét)
-    if (attempt && attempt.aiFeedback && !isProcessed) {
+    if (attempt && attempt.aiFeedback && !isProcessed && !isPracticeMode) {
       console.log("🌀 (Flow Lịch sử): Tìm thấy feedback cũ, đang tải vào Redux...");
       try {
-        // (Giả định 'aiFeedback' là một JSON string, cần parse)
         const feedback = typeof attempt.aiFeedback === 'string'
           ? JSON.parse(attempt.aiFeedback)
           : attempt.aiFeedback;
 
-        // Dùng action 'setWritingResult' để đưa feedback vào Redux
         dispatch(setWritingResult(feedback));
-        setIsProcessed(true); // Đánh dấu là đã xử lý xong (Không gọi AI nữa)
+        setIsProcessed(true);
       } catch (e) {
         console.error("Lỗi parse AI feedback cũ:", e);
-        // Nếu parse lỗi, vẫn đánh dấu đã xử lý để tránh gọi AI
         setIsProcessed(true);
       }
     }
-  }, [attempt, isProcessed, dispatch]);
+  }, [attempt, isProcessed, dispatch, isPracticeMode]);
 
 
-  // (LOGIC SỬA ĐỔI) useEffect 5: Xử lý chấm bài mới (New Submission Flow)
+  // 5. Xử lý Chấm bài (AI Grading Flow)
   useEffect(() => {
-    // Chỉ chạy nếu 'attempt' đã tải VÀ nó KHÔNG có feedback cũ
+    // --- PRACTICE MODE ---
+    if (isPracticeMode) {
+      if (taskFromState && essayFromState && !isProcessed) {
+        console.log("📤 (Flow Tự luyện): Đang gọi AI...");
+        setIsProcessed(true);
+
+        const aiFormData = {
+          task: taskFromState,
+          essay: essayFromState,
+        };
+
+        dispatch(createSubmit(aiFormData))
+          .unwrap()
+          .then((result) => {
+            console.log("✅ (Flow Tự luyện): Nhận kết quả AI thành công.");
+          })
+          .catch((error) => {
+            console.error("❌ Lỗi khi gọi AI (Tự luyện):", error);
+            setIsProcessed(false);
+          });
+      }
+      return;
+    }
+
+    // --- LOCK MODE (Nộp bài mới) ---
     const isReadyForNewCall = attempt && !attempt.aiFeedback;
+    const taskToSubmit = taskFromState || quizData?.promptText;
+    const essayToSubmit = essayFromState || attempt?.answers[0]?.userAnswer;
 
-    // Phải có dữ liệu từ location.state (chứng tỏ đây là flow nộp bài)
-    const isNewSubmission = taskFromState && essayFromState;
-
-    // Điều kiện gọi AI
     const canInitiateAiCall =
-      isReadyForNewCall &&  // Phải là attempt mới
-      isNewSubmission &&  // Phải là flow nộp bài
-      !assessmentResult &&  // Redux store rỗng
-      !assessmentLoading && // Không đang gọi
-      !isProcessed;         // Chưa xử lý
+      isReadyForNewCall &&
+      taskToSubmit &&
+      essayToSubmit &&
+      !assessmentResult &&
+      !assessmentLoading &&
+      !isProcessed;
 
     if (canInitiateAiCall) {
-      console.log("📤 (Flow Mới): Không có feedback, đang gọi AI...");
-      setIsProcessed(true); // Đánh dấu là đang xử lý
+      console.log("📤 (Flow Mới): Không có feedback cũ, đang gọi AI...");
+      setIsProcessed(true);
 
       const aiFormData = {
-        task: taskFromState,
-        essay: essayFromState,
+        task: taskToSubmit,
+        essay: essayToSubmit,
       };
 
       dispatch(createSubmit(aiFormData))
@@ -144,12 +163,9 @@ export default function WritingResultPage() {
           if (attemptId && (score !== null && score !== undefined)) {
             console.log(`✨ Đang cập nhật attempt [${attemptId}] với điểm VÀ feedback...`);
 
-            // (BỔ SUNG) Gửi 'aiFeedback' (dưới dạng JSON string)
             const attemptData = {
               attemptId: attemptId,
               score: Math.round(score),
-              // Gửi TOÀN BỘ 'result' (JSON)
-              // Bạn cần đảm bảo backend có thể nhận trường 'aiFeedback' (ví dụ: kiểu Text/JSON)
               aiFeedback: JSON.stringify(result)
             };
 
@@ -161,19 +177,18 @@ export default function WritingResultPage() {
         })
         .catch((error) => {
           console.error("❌ Lỗi khi gọi AI:", error);
-          setIsProcessed(false); // Cho phép thử lại nếu lỗi
+          setIsProcessed(false);
         });
     }
   }, [
+    isPracticeMode,
     taskFromState, essayFromState,
-    attempt, // 'attempt' giờ rất quan trọng
+    quizData, attempt,
     assessmentResult, assessmentLoading,
     isProcessed, dispatch, attemptId
   ]);
 
-  // --- (Các useEffect và logic còn lại không đổi) ---
-
-  // Handle image URL
+  // Xử lý URL ảnh
   useEffect(() => {
     let imageUrl = null;
     const imageSource = imageFromState || quizData?.promptImage;
@@ -192,7 +207,7 @@ export default function WritingResultPage() {
     };
   }, [imageFromState, quizData?.promptImage]);
 
-  // Handle resize
+  // Xử lý kéo thả resize panel
   useEffect(() => {
     const handleMouseMove = (e) => {
       if (!isResizing || !containerRef.current) return;
@@ -218,10 +233,18 @@ export default function WritingResultPage() {
     };
   }, [isResizing]);
 
-  const isLoading = attemptLoading || quizLoading || assessmentLoading;
-  const combinedError = attemptError || assessmentError || quizError;
+  // --- Render Logic ---
 
-  // Loading state
+  // Tính toán trạng thái Loading
+  const isLoading = isPracticeMode
+    ? assessmentLoading
+    : (attemptLoading || quizLoading || assessmentLoading);
+
+  // Tính toán lỗi (CHỈ cho Lock Mode)
+  const combinedError = isPracticeMode
+    ? assessmentError
+    : (attemptError || assessmentError || quizError);
+
   if (isLoading) {
     return (
       <div className="flex flex-col h-screen w-full bg-white text-black font-sans items-center justify-center p-4">
@@ -244,8 +267,8 @@ export default function WritingResultPage() {
     );
   }
 
-  // Error state
-  if (combinedError || (!attempt && !attemptLoading)) {
+  // Chỉ hiển thị lỗi cho Lock Mode
+  if (!isPracticeMode && (combinedError || (!attempt && !attemptLoading))) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-8">
         <h1 className="text-2xl font-bold text-red-700 mb-4">
@@ -259,9 +282,26 @@ export default function WritingResultPage() {
     );
   }
 
-  // LẤY DỮ LIỆU ĐỂ HIỂN THỊ
+  // Không có kết quả
+  if (!assessmentResult) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-8">
+        <h1 className="text-2xl font-bold text-gray-700 mb-4">
+          Không có dữ liệu phân tích
+        </h1>
+        <p className="text-gray-600 mb-6">
+          {isPracticeMode
+            ? "Dữ liệu bài tự luyện đã mất sau khi tải lại trang."
+            : "Hệ thống đang xử lý hoặc không tìm thấy kết quả."}
+        </p>
+        <Link to="/" className="text-blue-600 mt-4">Quay về trang chủ</Link>
+      </div>
+    );
+  }
+
+  // Chuẩn bị dữ liệu hiển thị
   const task = (quizData?.taskType === "Task 1" ? 1 : 2) || (taskFromState === "Task 1" ? 1 : 2) || 1;
-  const promptText = taskFromState || quizData?.promptText || "Đang tải đề bài...";
+  const promptText = taskFromState || quizData?.promptText || attempt?.answers[0]?.taskText || "Đang tải đề bài...";
   const essayText = essayFromState || attempt?.answers[0]?.userAnswer || "";
   const wordCount = essayText
     ? essayText.trim().split(/\s+/).filter(Boolean).length
@@ -288,8 +328,6 @@ export default function WritingResultPage() {
 
         <WritingAnalysisPanel
           width={100 - leftWidth}
-          // 'assessmentResult' giờ sẽ là feedback cũ (History)
-          // hoặc feedback mới (New)
           aiData={assessmentResult}
           wordCount={wordCount}
         />

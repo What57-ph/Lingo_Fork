@@ -265,7 +265,7 @@ function SpeakingTestPage() {
       if (!saveSingleFile.fulfilled.match(uploadAction)) {
         throw new Error(uploadAction.payload || "Lỗi khi tải file lên Cloud.");
       }
-      const audioUrl = uploadAction.payload?.mediaUrl;
+      const audioUrl = "uploadAction.payload?.mediaUrl";
       console.log("File đã tải lên Cloud:", audioUrl);
 
       const formData = new FormData();
@@ -313,7 +313,7 @@ function SpeakingTestPage() {
       console.log("Đã tạo attempt thành công, ID:", newAttemptId);
       toast.success("Nộp bài thành công! Đang chuyển trang kết quả.");
 
-      navigate(`/speaking-result/${newAttemptId}`);
+      navigate(`/tests/speaking/${testId}/${title}/results/${newAttemptId}`);
 
     } catch (error) {
       console.error("Lỗi khi nộp bài:", error);
