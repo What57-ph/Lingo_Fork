@@ -36,7 +36,7 @@ const RightSider = () => {
               <div className="text-xs text-gray-600">Total tests</div>
             </div>
             <div className="text-center p-3 bg-green-50 rounded-lg">
-              <div className="text-2xl font-bold text-green-600">{maxScore.toFixed(1) ?? 0.0}</div>
+              <div className="text-2xl font-bold text-green-600">{maxScore ?? 0.0}</div>
               <div className="text-xs text-gray-600">Highest point</div>
             </div>
           </div>

@@ -11,11 +11,15 @@ const DetailAnswer = ({ isModalOpen, handleOk, handleCancel, correctAnswer = "",
   const [questionData, setQuestionData] = useState([]);
   // let id = 2;
 
+  // console.log(correctAnswer);
+  // console.log(userAnswer);
+  // console.log(questionId);
+
   useEffect(() => {
     const fetchQuestion = async () => {
       try {
         const data = await dispatch(retrieveSingleQuestion(questionId)).unwrap();
-        console.log(data);
+        console.log("Single questions: ", data);
 
         setQuestionData(data);
       } catch (err) {
@@ -161,7 +165,7 @@ const DetailAnswer = ({ isModalOpen, handleOk, handleCancel, correctAnswer = "",
 
         <div className="mt-5">
           {questionData?.title && (
-            <p className="text-gray-800 mt-2 font-semibold text-base">{"Câu " + questionData?.id + " : " + questionData.title}</p>
+            <p className="text-gray-800 mt-2 font-semibold text-base">{"Câu " + questionData?.questionNumber + " : " + questionData.title}</p>
           )}
           <h4 className="font-bold text-gray-800 mb-4 flex items-center gap-1">
             <UnorderedListOutlined />

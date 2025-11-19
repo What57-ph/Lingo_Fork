@@ -19,60 +19,48 @@ function SpeakingTestPage() {
 
   const isLockMode = !!testId;
 
-  // (1. Dữ liệu gốc từ Redux)
   const {
     questions: fetchedQuestions,
     loading: pageLoading,
     error
   } = useSelector((state) => state.questions);
 
-  // (2. Bộ xử lí: Biến đổi 'fetchedQuestions' thành 'processedQuestions')
   const processedQuestions = useMemo(() => {
     if (!fetchedQuestions) return [];
 
-    // Dùng flatMap để biến mảng [Part 1, Part 2, Part 3]
-    // thành mảng [Part 1 Topic, Q1, Q2, ..., Part 2, Part 3 Q1, Q2, ...]
     return fetchedQuestions.flatMap(q => {
-      // Tách 'title' thành các dòng, lọc bỏ dòng trống
-      const lines = q.title.split(/[\r\n]+/).filter(line => line.trim() !== '');
-      if (lines.length === 0) return []; // Bỏ qua nếu câu hỏi rỗng
+      const lines = (q.title ?? '').split(/[\r\n]+/).filter(line => line.trim() !== '');
 
-      // Part 2 (Cue Card): Luôn là 1 slide duy nhất.
+      if (lines.length === 0) return [];
+
       if (q.part === 'Part 2') {
-        // Trả về một mảng chứa 1 slide
         return [{
           ...q,
-          title: q.title, // Giữ nguyên title đầy đủ
-          isTopic: false, // Đây là câu hỏi, không phải chủ đề
-          originalId: q.id // Giữ ID gốc của câu hỏi CSDL
+          title: q.title,
+          isTopic: false,
+          originalId: q.id
         }];
       }
 
-      // Part 1: Có 1 slide Topic + nhiều slide Câu hỏi
       if (q.part === 'Part 1') {
-        // Dòng đầu tiên (ví dụ: "Fruit") là Topic
         const topicSlide = {
           ...q,
-          title: lines[0], // Dòng đầu tiên là chủ đề
-          isTopic: true, // Đánh dấu là slide Topic
+          title: lines[0],
+          isTopic: true,
           originalId: q.id
         };
 
-        // Các dòng còn lại là câu hỏi
         const questionSlides = lines.slice(1).map(line => ({
           ...q,
-          title: line, // Mỗi dòng là một câu hỏi
+          title: line,
           isTopic: false,
           originalId: q.id
         }));
 
-        // Trả về [Topic, Q1, Q2, ...]
         return [topicSlide, ...questionSlides];
       }
 
-      // Part 3: Chỉ có các slide Câu hỏi
       if (q.part === 'Part 3') {
-        // Tất cả các dòng đều là câu hỏi
         return lines.map(line => ({
           ...q,
           title: line,
@@ -81,26 +69,23 @@ function SpeakingTestPage() {
         }));
       }
 
-      return []; // Bỏ qua nếu part không xác định
+      return [];
     });
 
-  }, [fetchedQuestions]); // Chỉ chạy lại khi fetchedQuestions thay đổi
+  }, [fetchedQuestions]);
 
-  const quizId = useMemo(() => (isLockMode ? parseInt(testId, 10) : 24), [isLockMode, testId]); // Mặc định 24
+  const quizId = useMemo(() => (isLockMode ? parseInt(testId, 10) : 24), [isLockMode, testId]);
 
-  // (3. Cập nhật topicPrompt để lấy từ dữ liệu thật)
   const topicPrompt = useMemo(() => {
     if (fetchedQuestions && fetchedQuestions.length > 0) {
       const part1 = fetchedQuestions.find(q => q.part === 'Part 1');
       if (part1) {
-        // Lấy dòng đầu tiên của Part 1 (ví dụ: "Fruit") làm chủ đề
         const topic = part1.title.split(/[\r\n]+/)[0].trim();
         if (topic) return topic;
       }
     }
-    // Fallback
     return isLockMode ? `IELTS Speaking Test #${testId}` : "IELTS Speaking Free Practice";
-  }, [isLockMode, testId, fetchedQuestions]); // Thêm fetchedQuestions
+  }, [isLockMode, testId, fetchedQuestions]);
 
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -116,7 +101,7 @@ function SpeakingTestPage() {
   const recordedChunksRef = useRef([]);
 
   useEffect(() => {
-    const idToFetch = testId || "24"; // Mặc định fetch test 24 (nơi có data mẫu)
+    const idToFetch = testId || "24";
 
     dispatch(retrieveQuestionForTest(idToFetch))
       .unwrap()
@@ -265,12 +250,12 @@ function SpeakingTestPage() {
       if (!saveSingleFile.fulfilled.match(uploadAction)) {
         throw new Error(uploadAction.payload || "Lỗi khi tải file lên Cloud.");
       }
-      const audioUrl = "uploadAction.payload?.mediaUrl";
-      console.log("File đã tải lên Cloud:", audioUrl);
+      const audioUrl = uploadAction.payload?.mediaUrl;
+      // console.log("File đã tải lên Cloud:", uploadAction);
 
       const formData = new FormData();
       formData.append("user_id", userId);
-      formData.append("topic_prompt", topicPrompt); // Dùng topicPrompt
+      formData.append("topic_prompt", topicPrompt);
       formData.append("audio", finalRecording.blob, "speaking_test.webm");
 
       const submitAction = await dispatch(createSubmit(formData));

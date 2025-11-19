@@ -31,7 +31,7 @@ const HistoryAttempts = () => {
       title: 'Kết quả',
       dataIndex: 'score',
       key: 'score',
-      render: text => <div className='font-semibold'>{text}/9.0</div>
+      render: text => <div className='font-semibold'>{text.toFixed(1)}/9.0</div>
     },
     {
       title: 'Thời gian làm bài',

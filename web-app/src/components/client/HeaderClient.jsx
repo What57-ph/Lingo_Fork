@@ -60,8 +60,8 @@ const HeaderClient = () => {
         },
         {
           key: "premium",
-          icon: <CrownOutlined />,
-          label: "Nâng cấp Premium",
+          icon: <FaChartLine />,
+          label: <Link to={"/analytics"}>Xem thống kê</Link>,
         },
         {
           key: "help",
@@ -99,13 +99,12 @@ const HeaderClient = () => {
               </div>
             </Link>
             <nav className="hidden lg:flex space-x-2 m-1 h-1/2">
-              <Link
+              {/* <Link
                 to={"/tests"}
-                className={`${
-                  location.pathname === "/tests"
-                    ? "!text-blue-600 !bg-blue-50 !rounded-lg"
-                    : "!text-gray-700 hover:!text-blue-600"
-                } 
+                className={`${location.pathname === "/tests"
+                  ? "!text-blue-600 !bg-blue-50 !rounded-lg"
+                  : "!text-gray-700 hover:!text-blue-600"
+                  } 
                                 flex items-center justify-center h-full p-3`}
               >
                 <FaClipboard className="mr-2 font-semibold text-lg" />
@@ -113,16 +112,15 @@ const HeaderClient = () => {
               </Link>
               <Link
                 to={"/analytics"}
-                className={`${
-                  location.pathname === "/analytics"
-                    ? "!text-blue-600 !bg-blue-50 !rounded-lg"
-                    : "!text-gray-700 hover:!text-blue-600"
-                } 
+                className={`${location.pathname === "/analytics"
+                  ? "!text-blue-600 !bg-blue-50 !rounded-lg"
+                  : "!text-gray-700 hover:!text-blue-600"
+                  } 
                                 flex items-center justify-center h-full p-2`}
               >
                 <FaChartLine className="mr-2 font-semibold  text-lg" />
                 Score statistics
-              </Link>
+              </Link> */}
             </nav>
           </div>
 

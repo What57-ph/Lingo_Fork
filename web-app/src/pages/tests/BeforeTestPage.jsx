@@ -29,8 +29,6 @@ const BeforeTestPage = () => {
   const { id } = useParams();
   const [testInfo, setTestInfo] = useState(null);
   const dispatch = useDispatch();
-<<<<<<< HEAD
-  const { commentOfTest } = useSelector(state => state.comments);
   useEffect(() => {
     dispatch(retrieveCommentsOfTest(id))
   }, [id, dispatch])

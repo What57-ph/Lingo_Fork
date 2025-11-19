@@ -135,7 +135,7 @@ function SpeakingResultPage() {
       <div className="flex flex-col h-screen w-full bg-gray-50 text-black font-sans">
         <header className="flex justify-between items-center p-4 border-b border-gray-200 bg-white sticky top-0 z-10">
           <Link to="/" className="text-xl font-bold text-gray-800">
-            Lexi<span className="text-blue-600">Prep</span>
+            <span className="text-blue-600">Lingo</span>
           </Link>
           <Link
             to="/speaking"

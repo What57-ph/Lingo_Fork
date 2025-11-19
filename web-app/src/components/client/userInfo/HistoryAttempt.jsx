@@ -54,7 +54,6 @@ const columns = [
     dataIndex: 'score',
     key: 'score',
     render: (_, record) => {
-      // Tính toán dữ liệu
       const totalCorrect = record.sectionResults?.reduce(
         (sum, sec) => sum + (sec.correctAnswers || 0),
         0

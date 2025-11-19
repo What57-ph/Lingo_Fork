@@ -68,6 +68,7 @@ function WritingTestPage() {
           setIsLoading(false);
           return;
         }
+        console.log(taskText);
 
         // PRACTICE MODE: Không lưu attempt, chuyển thẳng sang trang kết quả
         if (!isLockMode) {

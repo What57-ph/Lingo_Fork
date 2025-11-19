@@ -65,7 +65,7 @@ const PracticeModeModal = ({ isOpen, onClose }) => {
               Real exam simulation with limited time and no AI support.
             </p>
             <Link
-              to="/speaking"
+              to="/writing"
               className="w-full !bg-gray-800 hover:!bg-gray-900 !text-white font-semibold py-3 px-6 rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer"
               onClick={onClose}
             >
