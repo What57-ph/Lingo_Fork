@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { SearchOutlined } from '@ant-design/icons';
-import { Button, Input, Space, Table } from 'antd';
+import { Button, Input, Space, Table, message } from 'antd';
 import Highlighter from 'react-highlight-words';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { removeTest, retrieveAllTests } from '../../slice/tests';
 import TestModal from '../../components/admin/tests/TestModal';
 
@@ -12,19 +13,40 @@ const TestPage = () => {
     const [open, setOpen] = useState(false);
     const [type, setType] = useState();
     const [selectedRecord, setSelectedRecord] = useState(null);
+    const [messageApi, contextHolder] = message.useMessage();
     const searchInput = useRef(null);
     const dispatch = useDispatch();
-    const { tests } = useSelector(state => state.tests)
+    const navigate = useNavigate();
+    const { tests } = useSelector(state => state.tests);
+
     useEffect(() => {
         const getAllTests = async (params) => {
-            dispatch(retrieveAllTests(params))
+            dispatch(retrieveAllTests(params));
         }
         getAllTests("page=0&size=10");
-    }, []);
-    // console.log("all tests:", tests)
-    const handleDeleteTest = (id) => {
-        dispatch(removeTest(id));
-    }
+    }, [dispatch]);
+
+    const handleDeleteTest = async (id) => {
+        try {
+            await dispatch(removeTest(id)).unwrap();
+
+            // Show success message
+            messageApi.success('Test deleted successfully!');
+
+            // Reload the table
+            dispatch(retrieveAllTests("page=0&size=10"));
+        } catch (error) {
+            // Show error message
+            messageApi.error(error?.message || 'Failed to delete test. Please try again.');
+        }
+    };
+
+    const handleNavigateToTest = (record) => {
+        // Format the test name for URL (replace spaces with hyphens, lowercase)
+        const formattedName = record.title?.replace(/\s+/g, '-').toLowerCase() || 'test';
+        navigate(`/tests/${record.id}/${formattedName}`);
+    };
+
     const handleSearch = (selectedKeys, confirm, dataIndex) => {
         confirm();
         setSearchText(selectedKeys[0]);
@@ -168,7 +190,6 @@ const TestPage = () => {
                             setOpen(true);
                             setType("update");
                             setSelectedRecord(record);
-                            console.log("current row", record)
                         }}>
                         Update
                     </Button>
@@ -176,7 +197,7 @@ const TestPage = () => {
                         className='!bg-green-500 !text-white hover:!bg-green-600 transition'
                         onClick={() => {
                             setOpen(true);
-                            setType("detail")
+                            setType("detail");
                             setSelectedRecord(record);
                         }}>
                         Detail
@@ -184,15 +205,21 @@ const TestPage = () => {
                 </div>
             )
         }
-
     ];
 
     return (
         <>
+            {contextHolder}
             <Table columns={columns} dataSource={tests} bordered />
-            <TestModal type={type} open={open} setOpen={setOpen} record={selectedRecord} />
+            <TestModal
+                type={type}
+                open={open}
+                setOpen={setOpen}
+                record={selectedRecord}
+                onNavigateToTest={handleNavigateToTest}
+            />
         </>
-    )
+    );
 };
 
 export default TestPage;

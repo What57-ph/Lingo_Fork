@@ -1,5 +1,5 @@
 import { Button, Modal, Form, Input, InputNumber, Select, Upload } from 'antd';
-import { UploadOutlined } from '@ant-design/icons';
+import { LinkOutlined, UploadOutlined } from '@ant-design/icons';
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { saveUpdatingResourceMedia } from '../../../slice/files';
@@ -7,7 +7,7 @@ import { modifyTest } from '../../../slice/tests';
 import { toast } from 'react-toastify';
 const { Option } = Select;
 
-const TestModal = ({ type, open, setOpen, record }) => {
+const TestModal = ({ type, open, setOpen, record, onNavigateToTest }) => {
     const [form] = Form.useForm();
     const dispatch = useDispatch();
     const { fileUpdating } = useSelector((state) => state.file);
@@ -76,7 +76,24 @@ const TestModal = ({ type, open, setOpen, record }) => {
             title={type === 'edit' ? 'Cập nhật bài thi' : 'Thêm bài thi'}
             open={open}
             onCancel={() => setOpen(false)}
-            footer={null}
+            footer={
+                type === 'detail' ? [
+                    <Button
+                        key="navigate"
+                        type="primary"
+                        icon={<LinkOutlined />}
+                        onClick={() => {
+                            onNavigateToTest(record);
+                            setOpen(false);
+                        }}
+                    >
+                        Go to Test
+                    </Button>,
+                    <Button key="close" onClick={() => setOpen(false)}>
+                        Close
+                    </Button>
+                ] : null
+            }
         >
             <Form form={form} layout="vertical" onFinish={handleSave}>
                 <Form.Item
