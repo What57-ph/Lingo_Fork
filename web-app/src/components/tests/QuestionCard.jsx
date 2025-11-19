@@ -97,7 +97,7 @@ const QuestionCard = ({ groupKey, questionRefs, resourceContent, editMode, quest
                 explanationResourceContent: question.explanationResourceContent,
                 commonTitle: question.commonTitle,
             };
-            console.log("updating question data,", updatingQuestion)
+
             dispatch(modifyQuestion({ id: question.id, question: updatingQuestion }));
         });
     };
@@ -136,7 +136,6 @@ const QuestionCard = ({ groupKey, questionRefs, resourceContent, editMode, quest
         }
     }, [questions]);
 
-    // console.log("passage:", form.getFieldValue("passage"));
     return (
         <>
             <Form
@@ -185,6 +184,12 @@ const QuestionCard = ({ groupKey, questionRefs, resourceContent, editMode, quest
                                 </>
                             ) : (
                                 <div className={checkType(resourceContent) === "null" ? "hidden" : ""}>
+                                    <span className="block text-blue-700 font-bold text-base mb-1">
+                                        Câu hỏi {questions[0]?.questionNumber}
+                                        {questions.length > 1 && ` - ${questions[questions.length - 1]?.questionNumber}`}
+                                    </span>
+
+
                                     <Form.Item name="passage" label="Nội dung câu hỏi (đoạn văn)">
                                         <ReactQuill theme="snow" className="bg-blue-50 rounded-md" modules={quillModules} />
                                     </Form.Item>
@@ -269,53 +274,106 @@ const QuestionCard = ({ groupKey, questionRefs, resourceContent, editMode, quest
 
                                             <div className="flex-1">
                                                 {editMode ? (
-                                                    <Form.Item name={["questions", qId, "title"]} label={`Question ${q.questionNumber}`}>
-                                                        <Input.TextArea />
-                                                    </Form.Item>
+                                                    <div className="bg-gray-50 p-6 rounded-lg border-2 border-blue-200">
+                                                        {/* Question Number Header */}
+                                                        <div className="flex items-center gap-3 mb-4 pb-3 border-b-2 border-blue-300">
+                                                            <div className="w-12 h-12 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-xl">
+                                                                {q.questionNumber}
+                                                            </div>
+                                                            <h3 className="text-lg font-semibold text-gray-700">
+                                                                Câu hỏi {q.questionNumber}
+                                                            </h3>
+                                                        </div>
+
+                                                        {/* Question Title */}
+                                                        <Form.Item
+                                                            name={["questions", qId, "title"]}
+                                                            label={<span className="text-base font-medium">Nội dung câu hỏi</span>}
+                                                            className="mb-4"
+                                                        >
+                                                            <Input.TextArea
+                                                                rows={3}
+                                                                placeholder="Nhập nội dung câu hỏi..."
+                                                                className="text-base"
+                                                            />
+                                                        </Form.Item>
+
+                                                        {/* Answers Section */}
+                                                        <div className="bg-white p-4 rounded-lg border border-gray-200">
+                                                            <h4 className="text-base font-medium mb-3 text-gray-700">
+                                                                {isTextAnswer ? "Đáp án đúng" : "Các đáp án"}
+                                                            </h4>
+
+                                                            {/* Check if answers are null/empty - show text field instead of radio */}
+                                                            {isTextAnswer ? (
+                                                                <Form.Item
+                                                                    name={["questions", qId, "correct"]}
+                                                                    label={<span className="text-sm font-medium text-gray-600">Nhập đáp án đúng</span>}
+                                                                    className="mb-0"
+                                                                >
+                                                                    <Input
+                                                                        placeholder="Nhập đáp án..."
+                                                                        className="text-base"
+                                                                        size="large"
+                                                                    />
+                                                                </Form.Item>
+                                                            ) : (
+                                                                <>
+                                                                    <div className="space-y-3 mb-4">
+                                                                        {q.answers?.map((ans, aId) => (
+                                                                            <Form.Item
+                                                                                key={ans.id}
+                                                                                name={["questions", qId, "answers", aId, "content"]}
+                                                                                label={
+                                                                                    <span className="inline-flex items-center gap-2">
+                                                                                        <span className="w-6 h-6 rounded bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold">
+                                                                                            {String.fromCharCode(65 + aId)}
+                                                                                        </span>
+                                                                                        <span className="text-sm font-medium text-gray-600">
+                                                                                            Đáp án {aId + 1}
+                                                                                        </span>
+                                                                                    </span>
+                                                                                }
+                                                                                className="mb-3"
+                                                                            >
+                                                                                <Input
+                                                                                    placeholder={`Nhập đáp án ${String.fromCharCode(65 + aId)}...`}
+                                                                                    className="text-base"
+                                                                                />
+                                                                            </Form.Item>
+                                                                        ))}
+                                                                    </div>
+
+                                                                    <Form.Item
+                                                                        name={["questions", qId, "correct"]}
+                                                                        label={<span className="text-sm font-medium text-green-700">Chọn đáp án đúng</span>}
+                                                                        className="mb-0"
+                                                                    >
+                                                                        <Radio.Group className="flex gap-4">
+                                                                            {q.answers?.map((ans, aId) => (
+                                                                                <Radio
+                                                                                    key={ans.id}
+                                                                                    value={String.fromCharCode(65 + aId)}
+                                                                                    className="text-base"
+                                                                                >
+                                                                                    <span className="font-medium">
+                                                                                        {String.fromCharCode(65 + aId)}
+                                                                                    </span>
+                                                                                </Radio>
+                                                                            ))}
+                                                                        </Radio.Group>
+                                                                    </Form.Item>
+                                                                </>
+                                                            )}
+                                                        </div>
+                                                    </div>
                                                 ) : (
                                                     <p className="text-[16px] !mb-2 w-full">
                                                         {test.type === "IELTS" ? q.title || "" : q.title || `Question ${q.questionNumber}`}
                                                     </p>
                                                 )}
 
-                                                {editMode ? (
-                                                    <>
-                                                        {/* Check if answers are null/empty - show text field instead of radio */}
-                                                        {isTextAnswer ? (
-                                                            <Form.Item
-                                                                name={["questions", qId, "correct"]}
-                                                                label="Correct Answer (Text)"
-                                                            >
-                                                                <Input placeholder="Enter the correct answer" />
-                                                            </Form.Item>
-                                                        ) : (
-                                                            <>
-                                                                {q.answers?.map((ans, aId) => (
-                                                                    <Form.Item
-                                                                        key={ans.id}
-                                                                        name={["questions", qId, "answers", aId, "content"]}
-                                                                        label={`Answer ${aId + 1}`}
-                                                                    >
-                                                                        <Input />
-                                                                    </Form.Item>
-                                                                ))}
-
-                                                                <Form.Item
-                                                                    name={["questions", qId, "correct"]}
-                                                                    label="Correct Answer"
-                                                                >
-                                                                    <Radio.Group>
-                                                                        {q.answers?.map((ans, aId) => (
-                                                                            <Radio key={ans.id} value={String.fromCharCode(65 + aId)}>
-                                                                                Answer {aId + 1}
-                                                                            </Radio>
-                                                                        ))}
-                                                                    </Radio.Group>
-                                                                </Form.Item>
-                                                            </>
-                                                        )}
-                                                    </>
-                                                ) : test?.type === "IELTS" && isTextAnswer ? (
+                                                {!editMode && (test?.type === "IELTS" && isTextAnswer ? (
                                                     <>
                                                         <Input.TextArea
                                                             className="!h-10 !w-1/2"
@@ -366,46 +424,63 @@ const QuestionCard = ({ groupKey, questionRefs, resourceContent, editMode, quest
                                                             ) : null
                                                         )}
                                                     </Radio.Group>
-                                                )}
+                                                ))}
                                             </div>
                                         </div>
 
                                         {editMode && (
-                                            <>
-                                                <Form.Item
-                                                    name={["questions", qId, "explanation"]}
-                                                    label="Giải thích"
-                                                    valuePropName="value"
-                                                    getValueFromEvent={(value) => value}
-                                                >
-                                                    <ReactQuill theme="snow" className="bg-blue-50 rounded-md" modules={quillModules} />
-                                                </Form.Item>
+                                            <div className="mt-6 pt-6 border-t-2 border-gray-200">
+                                                {/* Explanation Section */}
+                                                <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200 mb-4">
+                                                    <Form.Item
+                                                        name={["questions", qId, "explanation"]}
+                                                        label={<span className="text-base font-medium text-gray-700">Giải thích đáp án</span>}
+                                                        valuePropName="value"
+                                                        getValueFromEvent={(value) => value}
+                                                        className="mb-0"
+                                                    >
+                                                        <ReactQuill
+                                                            theme="snow"
+                                                            className="bg-white rounded-md"
+                                                            modules={quillModules}
+                                                            placeholder="Nhập giải thích chi tiết cho câu hỏi này..."
+                                                        />
+                                                    </Form.Item>
+                                                </div>
 
-                                                <p>Thêm file cho phần giải thích (tùy chọn)</p>
-                                                <Upload.Dragger
-                                                    customRequest={(options) =>
-                                                        handleUpdateExplanationResource(options, {
-                                                            questionId: q.id,
-                                                            testTitle: q.testTitle,
-                                                            fileCategory: "QUESTION_AUDIO",
-                                                            currentResourceContent: q.explanationResourceContent,
-                                                            file: options.file,
-                                                            updatedFileName: q.explanationResourceContent.split("/").pop(),
-                                                        })
-                                                    }
-                                                    fileList={null}
-                                                    multiple={false}
-                                                    className="!h-64 w-full flex flex-col justify-center items-center my-4"
-                                                >
-                                                    <p className="ant-upload-drag-icon w-24 h-24 flex items-center justify-center p-4">
-                                                        <FaUpload className="text-black text-6xl" />
-                                                    </p>
-                                                    <p className="text-xl font-medium">Kéo thả file vào đây</p>
-                                                    <span>
-                                                        hoặc <span className="text-blue-400">chọn file</span>
-                                                    </span>
-                                                </Upload.Dragger>
-                                            </>
+                                                {/* File Upload Section */}
+                                                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                                                    <h4 className="text-base font-medium mb-3 text-gray-700">
+                                                        Tài liệu đính kèm (tùy chọn)
+                                                    </h4>
+                                                    <Upload.Dragger
+                                                        customRequest={(options) =>
+                                                            handleUpdateExplanationResource(options, {
+                                                                questionId: q.id,
+                                                                testTitle: q.testTitle,
+                                                                fileCategory: "QUESTION_AUDIO",
+                                                                currentResourceContent: q.explanationResourceContent,
+                                                                file: options.file,
+                                                                updatedFileName: q.explanationResourceContent?.split("/").pop(),
+                                                            })
+                                                        }
+                                                        fileList={null}
+                                                        multiple={false}
+                                                        className="!h-48 w-full flex flex-col justify-center items-center"
+                                                    >
+                                                        <p className="ant-upload-drag-icon w-16 h-16 flex items-center justify-center p-2">
+                                                            <FaUpload className="text-blue-500 text-4xl" />
+                                                        </p>
+                                                        <p className="text-base font-medium text-gray-700">Kéo thả file vào đây</p>
+                                                        <span className="text-sm text-gray-500">
+                                                            hoặc <span className="text-blue-500 font-medium">chọn file từ máy tính</span>
+                                                        </span>
+                                                        <p className="text-xs text-gray-400 mt-2">
+                                                            Hỗ trợ: Audio, Video, PDF, Image
+                                                        </p>
+                                                    </Upload.Dragger>
+                                                </div>
+                                            </div>
                                         )}
                                     </Card>
                                 </div>
@@ -417,7 +492,8 @@ const QuestionCard = ({ groupKey, questionRefs, resourceContent, editMode, quest
                 {editMode && (
                     <Form.Item className="mt-4">
                         <Button type="primary" htmlType="submit">
-                            Save All
+                            Lưu câu hỏi {questions[0]?.questionNumber}
+                            {questions.length > 1 && ` - ${questions[questions.length - 1]?.questionNumber}`}
                         </Button>
                     </Form.Item>
                 )}

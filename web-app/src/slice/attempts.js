@@ -80,7 +80,7 @@ export const retrieveAttempt = createAsyncThunk(
 
 export const retrieveAllAttempts = createAsyncThunk(
   "attempts/retrieveAll",
-  async ({ rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
       const res = await getAllAttempts();
       return res;

@@ -13,9 +13,9 @@ import _ from 'lodash';
 const DashboardPage = () => {
     const dispatch = useDispatch();
 
-    const { allAttempts } = useSelector(state => state.attempts)
-    const { tests } = useSelector(state => state.tests)
-    const { accounts } = useSelector(state => state.accounts)
+    const { allAttempts } = useSelector((state) => state.attempts)
+    const { tests } = useSelector((state) => state.tests)
+    const { accounts } = useSelector((state) => state.accounts)
     const [attemptDataChart, setAttemptDataChart] = useState();
     const [attemptsByType, setAttemptsByType] = useState();
     const [topQuizzes, setTopQuizzes] = useState();
@@ -98,12 +98,14 @@ const DashboardPage = () => {
     };
 
     useEffect(() => {
+        // console.log("open admin page")
         dispatch(retrieveAllAttempts());
         dispatch(retrieveAccounts());
         dispatch(retrieveAllTests());
 
-    }, [])
-
+    }, []);
+    // console.log("debug admin attempt", allAttempts)
+    // console.log("debug admin accounts", accounts)
     useEffect(() => {
         //use for attempt chart
         setAttemptDataChart(getNumberAttemptsEachMonth(allAttempts));
